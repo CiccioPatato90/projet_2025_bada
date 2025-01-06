@@ -42,3 +42,4 @@ AC = Bada4Aircraft(
 
 
 but what the fuck are all the .ATF .OPT ? the data on our plane should be in that form if we want to compute it ... is there a way to transforma data into this form ?
+there is some data conversion her : https://eurocontrol.github.io/pybada/API_reference/conversions.html#module-pyBADA.conversions 
