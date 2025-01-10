@@ -39,7 +39,9 @@ What I've found was that without giving the filePath, the DUMMY aircrafts are em
 For the Dummy-TWIN airplane we have been piped into txt file in the project directory.
 Apart from this, I'd say that
 
+
 You can instantiate an A320-232 like this:
+
 
 AC = Bada4Aircraft(
     badaVersion=badaVersion,
@@ -56,6 +58,53 @@ Possible API headers we might use include --> FT() flight trajectory, that allow
 that our plane undergoes. Everytime we want to change something we append a new "step" to the flightTrajectory object
 by specifying the next target parameters.
 
+
 Another is --> pyBADA.TCL.constantSpeedLevel() that calculates the time, fuel consumption,
 and other parameters for a level flight segment at a constant speed for a given aircraft in the BADA model.
 It supports step-climb, constant heading (true or magnetic), and turns.
+
+
+We only need the 0th configuration. LGUP -> Landing Gear Up
+Possible implementation would be to use xml parser in order to copy the part that we don't need, we modify CD_Clean and CL_clean
+
+
+PFM --> engine model, everything in PFM --> related to thrust
+
+
+--Meaning of files-- note: +20 is just for temperature
+.OPT files, tables that include the optimum speed for an aircraft, LRC and MRC are speeds which gives you the longest range (CW -> weight coefficient MMrc -> Mach Number)
+the CW is computed through python and then from lookup table you get the mach number and compute the rest of the things
+
+
+ECON.OPT --> more complex bc you have CCI (cost index coefficient), same as LRC/MRC but indexed with CCI (high = as fast as possible, low = save a lot of fuel (more or less equivalent to MAX RANGE))
+These tables are not used for the constant speed cruise
+
+
+PTD --> Point Computation, at a given flight level for a specific mass we have atmosferic values. These are the results of the computations made by bada.
+We use this in order to validate the results that we get from bada model, we don't need to use this
+
+PTF --> More or less the same of PTD but just in different format
+
+ATF --> error results regarding the precision of the model, so we need to get something like this
+
+
+-- Next steps --
+Try to fix constant
+30000ft in cruise it's ok
+speed Mach 0.77-0.81
+ISA = +20 (Critical case) but we want to begine with 0
+Wind = 0
+
+Directly go to identification of coefficients, we should start with some clean reference files
+
+-- PROJECT MANAGEMENT --
+Github for code shared with client
+Google Docs for documents and results
+Sprints 3 weeks on Friday at 14h
+
+-- Next week USER STORIES, to check that we are on same page --
+to check what we've done
+
+-- Next Sprint Planning --
+oBJ: define approach to identify the coefficient
+Get familiar with BADA library, read the documents that we were given, papers
