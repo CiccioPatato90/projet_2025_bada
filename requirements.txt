@@ -11,7 +11,7 @@ future @ file:///AppleInternal/Library/BuildRoots/226e9c8c-edb1-11ee-8f17-a65dce
 importlib_resources==6.4.0
 kiwisolver==1.4.5
 macholib @ file:///AppleInternal/Library/BuildRoots/226e9c8c-edb1-11ee-8f17-a65dcee5a99e/Library/Caches/com.apple.xbs/Sources/python3/macholib-1.15.2-py2.py3-none-any.whl
-matplotlib==3.9.1
+matplotlib~=3.10.0
 mpi4py==4.0.1
 numpy==2.0.1
 packaging==24.1
@@ -34,3 +34,5 @@ typing_extensions==4.12.2
 tzdata==2024.1
 virtualenv==20.26.3
 zipp==3.19.2
+
+pyBADA~=0.1.2

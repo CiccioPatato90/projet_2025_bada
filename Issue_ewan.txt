@@ -32,6 +32,13 @@ A320-232
 ├── MRC.OPT
 └── OPTALT.OPT
 
+NOTE: There are also XML files:
+if the objective is to find the coefficients that they have stored in here, alors we would use an xml parser or a table generator and try to generate the desired format
+by hand. At the end of the day, .PTD files are just text files with a different extensions.
+What I've found was that without giving the filePath, the DUMMY aircrafts are embedded in the library.
+For the Dummy-TWIN airplane we have been piped into txt file in the project directory.
+Apart from this, I'd say that
+
 You can instantiate an A320-232 like this:
 
 AC = Bada4Aircraft(
@@ -42,4 +49,13 @@ AC = Bada4Aircraft(
 
 
 but what the fuck are all the .ATF .OPT ? the data on our plane should be in that form if we want to compute it ... is there a way to transforma data into this form ?
-there is some data conversion her : https://eurocontrol.github.io/pybada/API_reference/conversions.html#module-pyBADA.conversions 
+there is some data conversion her : https://eurocontrol.github.io/pybada/API_reference/conversions.html#module-pyBADA.conversions
+
+
+Possible API headers we might use include --> FT() flight trajectory, that allows us to control declaratively the various steps
+that our plane undergoes. Everytime we want to change something we append a new "step" to the flightTrajectory object
+by specifying the next target parameters.
+
+Another is --> pyBADA.TCL.constantSpeedLevel() that calculates the time, fuel consumption,
+and other parameters for a level flight segment at a constant speed for a given aircraft in the BADA model.
+It supports step-climb, constant heading (true or magnetic), and turns.
