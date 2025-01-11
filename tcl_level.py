@@ -1,9 +1,3 @@
-"""
-Aircraft Trajectory Calculation
-===============================
-
-Example of BADA3 and BADA4 trajectory using TCL
-"""
 
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
@@ -94,7 +88,7 @@ plt.show()
 
 # Plot for fuel quantity
 plt.figure(4, figsize=(8, 6))
-plt.plot(df["dist"], df["FUELCONSUMED"], linestyle="-", color="r")
+plt.plot(df["dist"], df["FUEL"], linestyle="-", color="r")
 plt.grid(True)
 plt.xlabel("distance [kt]")
 plt.ylabel("fuel [kg]")

@@ -83,7 +83,9 @@ These tables are not used for the constant speed cruise
 PTD --> Point Computation, at a given flight level for a specific mass we have atmosferic values. These are the results of the computations made by bada.
 We use this in order to validate the results that we get from bada model, we don't need to use this
 
+
 PTF --> More or less the same of PTD but just in different format
+
 
 ATF --> error results regarding the precision of the model, so we need to get something like this
 
