@@ -94,7 +94,7 @@ ATF --> error results regarding the precision of the model, so we need to get so
 Try to fix constant
 30000ft in cruise it's ok
 speed Mach 0.77-0.81
-ISA = +20 (Critical case) but we want to begine with 0
+ISA = +20 (Critical case) but we want to begin with 0
 Wind = 0
 
 Directly go to identification of coefficients, we should start with some clean reference files

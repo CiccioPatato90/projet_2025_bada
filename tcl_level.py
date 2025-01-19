@@ -1,6 +1,7 @@
 
 from dataclasses import dataclass
 import matplotlib.pyplot as plt
+import pandas as pd
 
 from pyBADA import TCL as TCL
 from pyBADA.bada4 import Bada4Aircraft
@@ -38,9 +39,10 @@ ba = 0  # [deg] bank angle
 DeltaTemp = 0  # [K] delta temperature from ISA
 
 # Initial conditions
-m_init = AC.OEW + 0.7 * (AC.MTOW - AC.OEW)  # [kg] initial mass
-CAS_init = 170  # [kt] Initial CAS
-Hp_RWY = 318.0  # [ft] CDG RWY26R elevation
+#m_init = AC.OEW + 0.7 * (AC.MTOW - AC.OEW)  # [kg] initial mass
+m_init = 180000
+CAS_init = 309.1  # [kt] Initial CAS
+Altitude = 31000 # [ft] CDG RWY26R elevation
 
 df = TCL.constantSpeedLevel(
     # plane to sim
@@ -48,7 +50,7 @@ df = TCL.constantSpeedLevel(
     # length of the flight segment type
     lengthType='time',
     # simulation length
-    length=10000,
+    length=3600,
     # CAS, TAS or - for Mach
     speedType=speedType,
     # wind speed (positive for headwind, negative for tailwind)
@@ -56,7 +58,7 @@ df = TCL.constantSpeedLevel(
     # target speed, for cruise is maintained
     v=CAS_init,
     # initial pressure
-    Hp_init=Hp_RWY,
+    Hp_init=Altitude,
     # initial mass
     m_init=m_init,
     # deviation from standard ISA [kelvin]
@@ -82,16 +84,29 @@ plt.plot(df["time"], df["FUELCONSUMED"], linestyle="-", color="r")
 plt.grid(True)
 plt.xlabel("time [s]")
 plt.ylabel("fuel [kg]")
-plt.title("fuel (kg) as a Function of Time")
+plt.title("fuel consumed (kg) as a Function of Time")
 # Display the plot
 plt.show()
 
 # Plot for fuel quantity
 plt.figure(4, figsize=(8, 6))
-plt.plot(df["dist"], df["FUEL"], linestyle="-", color="r")
+plt.plot(df["time"], df["FUEL"]*3600, linestyle="-", color="r")
 plt.grid(True)
 plt.xlabel("distance [kt]")
 plt.ylabel("fuel [kg]")
-plt.title("fuel (kg) as a Function of Distance")
+plt.title("fuel consumption rate (kg/s) as a Function of time")
 # Display the plot
+plt.show()
+
+
+# Calculate Specific Range (SR) in NM/kg
+df_sr = df["dist"] / (df["FUEL"]*3600) # makes sense bc (kg/s)*s = kg --> NM/k
+
+# Plot SR as a function of time
+plt.figure(4, figsize=(8, 6))
+plt.plot(df["dist"], df_sr, linestyle="-", color="r")
+plt.grid(True)
+plt.xlabel("Time [s]")
+plt.ylabel("Specific Range [NM/kg]")
+plt.title("Specific Range (NM/kg) as a Function of Time")
 plt.show()
