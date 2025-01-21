@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
-<bada40:ACM xmlns:bada40="http://www.eurocontrol.int/eec/public/standard_page/bada40">
+<?xml version='1.0' encoding='utf-8'?>
+<ns0:ACM xmlns:ns0="http://www.eurocontrol.int/eec/public/standard_page/bada40">
    <model>Dummy-TWIN-plus</model>
    <type>JET</type>
    <engine>CFM56-XXX</engine>
-   <description/>
+   <description />
    <ICAO>
       <designator>DUM2</designator>
       <WTC>M</WTC>
@@ -19,21 +19,21 @@
                <M_max>0.81</M_max>
                <scalar>1e-006</scalar>
                <CD_clean>
-                  <d>605181.95903043775000000000</d>
-                  <d>-1813663.14698209870000000000</d>
-                  <d>2092064.52284140860000000000</d>
-                  <d>-1066720.56496862250000000000</d>
-                  <d>203128.64123039503000000000</d>
-                  <d>8073.46161363619470000000</d>
-                  <d>52357.58959558099700000000</d>
-                  <d>-34670.50694617279100000000</d>
-                  <d>9556.00626063819070000000</d>
-                  <d>-918.99153250212282000000</d>
-                  <d>469.07740002988709000000</d>
-                  <d>4435.37886588549740000000</d>
-                  <d>-2527.27446675503550000000</d>
-                  <d>-2162.53307737603380000000</d>
-                  <d>1256.31854063199720000000</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
                </CD_clean>
             </DPM_clean>
             <BLM_clean>
@@ -41,11 +41,11 @@
                <Mmax>0.82</Mmax>
                <CL_Mach0>1.4363</CL_Mach0>
                <CL_clean>
-                  <bf>0.64734425549339292000</bf>
-                  <bf>12.05263986426068200000</bf>
-                  <bf>-53.38407067650780400000</bf>
-                  <bf>82.93686008499547300000</bf>
-                  <bf>-43.43267897547836000000</bf>
+                  <bf>0</bf>
+                  <bf>1</bf>
+                  <bf>2</bf>
+                  <bf>3</bf>
+                  <bf>4</bf>
                </CL_clean>
             </BLM_clean>
          </LGUP>
@@ -57,9 +57,9 @@
          <LGUP>
             <DPM_nonclean>
                <CD_nonclean>
-                  <d>0.023559</d>
-                  <d>-0.012174</d>
-                  <d>0.057331</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
                </CD_nonclean>
             </DPM_nonclean>
             <BLM>
@@ -74,9 +74,9 @@
          <LGUP>
             <DPM_nonclean>
                <CD_nonclean>
-                  <d>0.062096</d>
-                  <d>-0.059759</d>
-                  <d>0.069141</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
                </CD_nonclean>
             </DPM_nonclean>
             <BLM>
@@ -91,9 +91,9 @@
          <LGUP>
             <DPM_nonclean>
                <CD_nonclean>
-                  <d>0.066199</d>
-                  <d>-0.051749</d>
-                  <d>0.062858</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
                </CD_nonclean>
             </DPM_nonclean>
             <BLM>
@@ -108,9 +108,9 @@
          <LGUP>
             <DPM_nonclean>
                <CD_nonclean>
-                  <d>0.088985</d>
-                  <d>-0.070279</d>
-                  <d>0.071119</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
                </CD_nonclean>
             </DPM_nonclean>
             <BLM>
@@ -120,9 +120,9 @@
          <LGDN>
             <DPM_nonclean>
                <CD_nonclean>
-                  <d>0.11167</d>
-                  <d>-0.064767</d>
-                  <d>0.070087</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
                </CD_nonclean>
             </DPM_nonclean>
             <BLM>
@@ -137,9 +137,9 @@
          <LGUP>
             <DPM_nonclean>
                <CD_nonclean>
-                  <d>0.13803</d>
-                  <d>-0.084484</d>
-                  <d>0.074678</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
                </CD_nonclean>
             </DPM_nonclean>
             <BLM>
@@ -149,9 +149,9 @@
          <LGDN>
             <DPM_nonclean>
                <CD_nonclean>
-                  <d>0.1651</d>
-                  <d>-0.096208</d>
-                  <d>0.081688</d>
+                  <d>0</d>
+                  <d>0</d>
+                  <d>0</d>
                </CD_nonclean>
             </DPM_nonclean>
             <BLM>
@@ -736,4 +736,4 @@
          </SpeedSchedule>
       </SpeedScheduleList>
    </ARPM>
-</bada40:ACM>
+</ns0:ACM>

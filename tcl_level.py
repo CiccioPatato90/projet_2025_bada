@@ -22,7 +22,7 @@ class target:
 badaVersion = "DUMMY"
 
 # allData = Bada3Parser.parseAll(badaVersion=badaVersion)
-allData = Bada4Parser.parseAll(badaVersion=badaVersion)
+allData = Bada4Parser.parseAll(badaVersion=badaVersion,filePath="reference_dummy_extracted")
 print(allData)
 
 #AC = Bada3Aircraft(badaVersion=badaVersion, acName="J2H", allData=allData)

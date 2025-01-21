@@ -4,7 +4,8 @@ from pyBADA.bada4 import PTD
 from utils.prn_parser import PRNFileParser
 
 badaVersion = "DUMMY"
-allData = Bada4Parser.parseAll(badaVersion=badaVersion)
+allData = Bada4Parser.parseAll(badaVersion=badaVersion,filePath="reference_dummy_extracted")
+print(allData)
 # still using Dummy XML
 AC = Bada4Aircraft(
     badaVersion=badaVersion,
