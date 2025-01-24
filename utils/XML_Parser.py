@@ -1,5 +1,8 @@
 import xml.etree.ElementTree as ET
 
+from numpy import integer
+
+
 class XMLParser:
     def __init__(self, file_path):
         self.file_path = file_path
@@ -15,6 +18,14 @@ class XMLParser:
             print(f"Found: {elem.tag} -> {elem.text}")
         return elements
 
+    def find_tag_coefficients(self, tag_name):
+        elements = self.root.findall(f".//{tag_name}")
+        res = []
+        for elem in elements:
+            print(f"Found: {elem.tag} -> {elem.text}")
+            res.append(float(elem.text))
+        return res
+
     def modify_tag(self, tag_name, new_value):
         elements = self.root.findall(f".//{tag_name}")
         if not elements:
@@ -29,24 +40,24 @@ class XMLParser:
             elem.text = str(new_value)
 
         self.tree.write(self.file_path, encoding="utf-8", xml_declaration=True)
-        print("Updated "+tag_name+" values successfully!")
+        print(f"Updated {tag_name} to {new_value}.")
 
 
-def change_multiple_tags(list_of_tags, dict_of_list_of_values):
-        for tag in list_of_tags:
-            print(f"Tag: {tag}")
-            if dict_of_list_of_values[tag] is None:
-                tab = xml_parser.find_tag(tag)
-                new_values = [None] * len(tab)
-                for i in range(len(tab)):
-                    new_values[i] = round(float(tab[i].text))  # here if you want to change based on the value found in the doc or just do nothing
-                xml_parser.modify_tag(tag, new_values)
-                xml_parser.find_tag(tag)
-            else:
-                tab = xml_parser.find_tag(tag)
-                xml_parser.modify_tag(tag, dict_of_list_of_values[tag])
-                xml_parser.find_tag(tag)
-
+def change_multiple_tags(list_of_tags, dict_of_list_of_values, xml_parser):
+    for tag in list_of_tags:
+        print(f"Tag: {tag}")
+        if dict_of_list_of_values[tag] is None:
+            tab = xml_parser.find_tag(tag)
+            new_values = [None] * len(tab)
+            for i in range(len(tab)):
+                new_values[i] = round(float(tab[i].text))  # here if you want to change based on the value found in the doc or just do nothing
+            xml_parser.modify_tag(tag, new_values)
+            xml_parser.find_tag(tag)
+        else:
+            tab = xml_parser.find_tag(tag)
+            xml_parser.modify_tag(tag, dict_of_list_of_values[tag])
+            xml_parser.find_tag(tag)
+"""
 xml_parser = XMLParser("../reference_dummy_extracted/Dummy-TWIN-plus/Dummy-TWIN-plus.xml")
 list_of_tags = ["CD_clean/d","CL_clean/bf","CD_nonclean/d"]
 array_0 = [0] * xml_parser.len_tags(list_of_tags[0])
@@ -58,3 +69,4 @@ for i, tag in enumerate(list_of_tags):
     dict_of_list_of_values[tag] = arrays[i]
 print(dict_of_list_of_values)
 change_multiple_tags(list_of_tags, dict_of_list_of_values)
+"""
