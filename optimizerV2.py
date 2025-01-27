@@ -14,6 +14,8 @@ from pyBADA.bada4 import Parser as Bada4Parser
 #   - Same as above but 2 coefficients at a time
 #   - Study potential correlation between coefficients
 #   - Try to understand the physics behind it and rethink cost function
+#   - (VAL1 - VAL2) / VAL1 --> ADD AS OUTPUT METRIC
+#   - Try to show min/max error, change CF
 
 
 def reinit_bada_xml():
