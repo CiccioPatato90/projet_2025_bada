@@ -27,7 +27,17 @@ for index, line in enumerate(lines):
     # Capture table data
     if current_key and (data_pattern in line):
         current_line_index = index
-        data_blocks[current_key].append(lines[current_line_index + 2 : current_line_index + 54])
+        for j in range(2, 54):
+            if current_line_index + j < len(lines):
+                next_line = lines[current_line_index + j]
+
+                # Stop appending if the second character is a letter
+                if len(next_line) > 3 and next_line[3].isalpha():
+                    print(f"Stopping at: {current_key}")
+                    break
+
+                data_blocks[current_key].append(next_line)
+
 
 # Save each altitude-temperature block into a CSV
 for (altitude, temperature), rows in data_blocks.items():
@@ -36,8 +46,6 @@ for (altitude, temperature), rows in data_blocks.items():
             writer = csv.writer(csvfile)
             writer.writerow(["WGHT (KG)", "MACH", "CAS (KT)", "TAS (KT)", "SR (NMKG)", "WFE (KG/H)", "N1 (%)", "EGT (DG.C)", "CL", "CD", "ALPH (DEG)", "DRAG (DAN)", "FN (DAN)", "PCFN (%)"])
             for row in rows:
-                for r in row:
-                    r=list(map(float, r.split()))
-                    print(r)
-                    writer.writerow(r)
+                row=list(map(float, row.split()))
+                writer.writerow(row)
         print(f"Saved: {filename}")
