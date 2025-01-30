@@ -7,7 +7,7 @@ with open("../Data/A330_example(1).prn", "r") as file:
     lines = file.readlines()
 
 # Regular expressions to detect altitude, temperature, and data rows
-alt_temp_pattern = re.compile(r"ALTITUDE\s*:\s*([\d.]+)\.FT\s+ISA\s*([+-]?\s*\d+\.\d+)")
+alt_temp_pattern = re.compile( r"ALTITUDE\s*:\s*([\d.]+)\.FT\s+ISA\s*([+-]?\s*\d+\.\d+)\s+DG\.C\s+WIND\s*:\s*(0\.0)\s*KT")
 data_pattern = "WGHT    MACH    CAS     TAS      SR     WFE      N1     EGT      CL      CD     ALPH    DRAG     FN     PCFN"
 
 # Store extracted data
@@ -18,6 +18,7 @@ for index, line in enumerate(lines):
     # Search for altitude and ISA temperature
     alt_temp_match = alt_temp_pattern.search(line)
     if alt_temp_match:
+        print(line)
         altitude = float(alt_temp_match.group(1))
         temperature = float(alt_temp_match.group(2).replace(" ", ""))  # Clean spaces
         current_key = (str(altitude), str(temperature))
@@ -33,7 +34,7 @@ for index, line in enumerate(lines):
 
                 # Stop appending if the second character is a letter
                 if len(next_line) > 3 and next_line[3].isalpha():
-                    print(f"Stopping at: {current_key}")
+                    #print(f"Stopping at: {current_key}")
                     break
 
                 data_blocks[current_key].append(next_line)
