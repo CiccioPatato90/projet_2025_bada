@@ -1,11 +1,11 @@
+import glob
+import os
+
 from matplotlib import pyplot as plt
-from matplotlib.testing.compare import calculate_rms
 from pyBADA.bada4 import Bada4Aircraft
 from pyBADA.bada4 import Parser as Bada4Parser
 from pyBADA.bada4 import PTD
-from utils.prn_parser import PRNFileParser
 import seaborn as sns
-from matplotlib.colors import Normalize
 
 import numpy as np
 import pandas as pd
@@ -27,42 +27,52 @@ AC = Bada4Aircraft(
     allData=allData,
 )
 
-file_path = "table.txt"
-parser = PRNFileParser(file_path)
-parser.parse_file()
-
-# Access dataframe
-print("\nData Table DRAG:")
-drag_prn = parser.get_column_as_array("DRAG")
-print(drag_prn)
-print("\nMetadata:")
-print(parser.get_metadata())
+csv_files = glob.glob("utils/Altitude_*_ISA_*.csv")
+all_results_df = pd.DataFrame()  # To store results from all files
+output_dir = "ptd_results"
+os.makedirs(output_dir, exist_ok=True)
 
 ptd = PTD(AC)
-results = []
-drag_bada_values = []
 
-# Loop through parsed data to calculate drag using BADA and compare with PRN drag
-for altitude, cas, drag_prn_val in zip(
-    parser.get_column_as_array("WGHT"),
-    parser.get_column_as_array("CAS"),
-    drag_prn
-):
-    result = ptd.PTD_cruise_SKYCONSEIL([altitude], [30000], cas, 0)
-    drag_bada_val = result[0][0]  # Extracting the value from result
-    drag_bada_values.append(drag_bada_val)
-    results.append((altitude, cas, drag_bada_val, drag_prn_val*10))
+for file_path in csv_files:
+    print(f"Processing: {file_path}")
+    try:
+        df = pd.read_csv(file_path)
 
-# Calculate and print RMSE between BADA and PRN drag values
-#rmse = calculate_rmse(drag_bada_values, drag_prn)
+        results = []
+        for _, row in df.iterrows():
+            altitude = row["WGHT (KG)"]
+            cas = row["CAS (KT)"]
+            drag_prn_val = row["DRAG (DAN)"]
+            try:
+                result = ptd.PTD_cruise_SKYCONSEIL([altitude], [30000], cas, 0)
+                drag_bada_val = result[0][0]
+                results.append([altitude, cas, drag_bada_val, drag_prn_val * 10])
+            except Exception as e:
+                print(f"PTD Error: {e} for altitude={altitude}, cas={cas} in {file_path}")
+                continue
 
-results_df = pd.DataFrame(results, columns=["Mass", "CAS", "Drag_BADA", "Drag_PRN"])
+        results_df = pd.DataFrame(results, columns=["Mass", "CAS", "Drag_BADA", "Drag_PRN"])
+        results_df["RMSE"] = results_df.apply(calculate_rmse_row, axis=1)
+        base_name = os.path.basename(file_path)
+        output_file_path = os.path.join(output_dir, f"results_{base_name}")
+        results_df.to_csv(output_file_path, index=False)
+        print(f"Results saved to: {output_file_path}")
 
-# Apply the RMSE calculation for each row
-results_df["RMSE"] = results_df.apply(calculate_rmse_row, axis=1)
+    except FileNotFoundError:
+        print(f"File not found: {file_path}")
+    except pd.errors.EmptyDataError:
+        print(f"File is empty: {file_path}")
+    except Exception as e:  # Catch other potential errors
+        print(f"Error processing {file_path}: {e}")
 
-results_df["Drag_BADA"] = results_df["Drag_BADA"].round(SIGNIFICANT_DIGITS)
-results_df["Drag_PRN"] = results_df["Drag_PRN"].round(SIGNIFICANT_DIGITS)
-results_df["RMSE"] = results_df["RMSE"].round(SIGNIFICANT_DIGITS)
+all_results_df = pd.concat([pd.read_csv(f) for f in glob.glob("ptd_results/*.csv")], ignore_index=True)
 
-results_df.to_csv("results.csv")
+sns.lineplot(x="Mass", y="Drag_BADA", data=all_results_df, label="BADA")
+sns.lineplot(x="Mass", y="Drag_PRN", data=all_results_df, label="PRN")
+plt.xlabel("Mass")
+plt.ylabel("Drag")
+plt.title("Drag Comparison (All Files)")
+plt.legend()
+plt.savefig("drag_comparison.png")
+plt.show()
