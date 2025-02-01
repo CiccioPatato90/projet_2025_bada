@@ -1,6 +1,9 @@
+import os
 import re
 import csv
 
+output_dir = os.path.join(os.path.dirname(__file__), "../ptd_inputs")
+os.makedirs(output_dir, exist_ok=True)  # Ensure the directory exists
 
 # Open the PRN file for reading
 with open("../Data/A330_example(1).prn", "r") as file:
@@ -43,7 +46,9 @@ for index, line in enumerate(lines):
 # Save each altitude-temperature block into a CSV
 for (altitude, temperature), rows in data_blocks.items():
         filename = f"Altitude_{altitude}_ISA_{temperature}.csv"
-        with open(filename, "w", newline="") as csvfile:
+        filepath = os.path.join(output_dir, filename)  # Save in ptd_inputs folder
+
+        with open(filepath, "w", newline="") as csvfile:
             writer = csv.writer(csvfile)
             writer.writerow(["WGHT (KG)", "MACH", "CAS (KT)", "TAS (KT)", "SR (NMKG)", "WFE (KG/H)", "N1 (%)", "EGT (DG.C)", "CL", "CD", "ALPH (DEG)", "DRAG (DAN)", "FN (DAN)", "PCFN (%)"])
             for row in rows:

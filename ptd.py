@@ -27,7 +27,7 @@ AC = Bada4Aircraft(
     allData=allData,
 )
 
-csv_files = glob.glob("utils/Altitude_*_ISA_*.csv")
+csv_files = glob.glob("ptd_inputs/Altitude_*_ISA_*.csv")
 all_results_df = pd.DataFrame()  # To store results from all files
 output_dir = "ptd_results"
 os.makedirs(output_dir, exist_ok=True)

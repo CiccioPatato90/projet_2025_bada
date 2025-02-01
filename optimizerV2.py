@@ -3,7 +3,6 @@ import glob
 from scipy.optimize import minimize
 import numpy as np
 import pandas as pd
-from utils.prn_parser import PRNFileParser
 from utils.XML_Parser import XMLParser
 from pyBADA.bada4 import PTD
 from pyBADA.bada4 import Bada4Aircraft
@@ -47,15 +46,13 @@ def rmse_cost_function(coefficients, tags, csv_files, xml_parser):
 
     for file in csv_files:  # Loop through CSV files
         df = pd.read_csv(file)
-        # print(f"Shape of {file}: {df.shape}")  # Check if DataFrame is empty
-        # print(f"Columns of {file}: {df.columns}")  # Check the columns
         if df.empty:
             print(f"WARNING: DataFrame for {file} is empty!")
             continue  # skip to the next file
 
-        mass = df["WGHT (KG)"].to_numpy()
-        cas = df["CAS (KT)"].to_numpy()
-        drag_prn = df["PCFN (%)"].to_numpy()
+        mass = df["Mass"].to_numpy()
+        cas = df["CAS"].to_numpy()
+        drag_prn = df["Drag_PRN"].to_numpy()
 
         drag_bada_updated = []
         for m, c in zip(mass, cas):
@@ -78,7 +75,7 @@ xml_parser = XMLParser("reference_dummy_extracted/Dummy-TWIN-plus/Dummy-TWIN-plu
 tags = ["CD_clean/d"]
 initial_guess = xml_parser.find_tag_coefficients(tags[0])
 
-csv_files = glob.glob("utils/Altitude_*_ISA_*.csv")
+csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_*.csv")
 if not csv_files:
     raise FileNotFoundError("No CSV files found. Run tmp.py first.")
 
