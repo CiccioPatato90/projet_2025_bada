@@ -1,9 +1,9 @@
-<?xml version='1.0' encoding='utf-8'?>
-<ns0:ACM xmlns:ns0="http://www.eurocontrol.int/eec/public/standard_page/bada40">
+<?xml version="1.0" encoding="utf-8"?>
+<bada40:ACM xmlns:bada40="http://www.eurocontrol.int/eec/public/standard_page/bada40">
    <model>Dummy-TWIN-plus</model>
    <type>JET</type>
    <engine>CFM56-XXX</engine>
-   <description />
+   <description/>
    <ICAO>
       <designator>DUM2</designator>
       <WTC>M</WTC>
@@ -74,9 +74,9 @@
          <LGUP>
             <DPM_nonclean>
                <CD_nonclean>
-                  <d>0</d>
-                  <d>0</d>
-                  <d>0</d>
+                  <d>0.062096</d>
+                  <d>-0.059759</d>
+                  <d>0.069141</d>
                </CD_nonclean>
             </DPM_nonclean>
             <BLM>
@@ -91,9 +91,9 @@
          <LGUP>
             <DPM_nonclean>
                <CD_nonclean>
-                  <d>0</d>
-                  <d>0</d>
-                  <d>0</d>
+                  <d>0.066199</d>
+                  <d>-0.051749</d>
+                  <d>0.062858</d>
                </CD_nonclean>
             </DPM_nonclean>
             <BLM>
@@ -108,9 +108,9 @@
          <LGUP>
             <DPM_nonclean>
                <CD_nonclean>
-                  <d>0</d>
-                  <d>0</d>
-                  <d>0</d>
+                  <d>0.088985</d>
+                  <d>-0.070279</d>
+                  <d>0.071119</d>
                </CD_nonclean>
             </DPM_nonclean>
             <BLM>
@@ -120,9 +120,9 @@
          <LGDN>
             <DPM_nonclean>
                <CD_nonclean>
-                  <d>0</d>
-                  <d>0</d>
-                  <d>0</d>
+                  <d>0.11167</d>
+                  <d>-0.064767</d>
+                  <d>0.070087</d>
                </CD_nonclean>
             </DPM_nonclean>
             <BLM>
@@ -137,9 +137,9 @@
          <LGUP>
             <DPM_nonclean>
                <CD_nonclean>
-                  <d>0</d>
-                  <d>0</d>
-                  <d>0</d>
+                  <d>0.13803</d>
+                  <d>-0.084484</d>
+                  <d>0.074678</d>
                </CD_nonclean>
             </DPM_nonclean>
             <BLM>
@@ -149,9 +149,9 @@
          <LGDN>
             <DPM_nonclean>
                <CD_nonclean>
-                  <d>0</d>
-                  <d>0</d>
-                  <d>0</d>
+                  <d>0.1651</d>
+                  <d>-0.096208</d>
+                  <d>0.081688</d>
                </CD_nonclean>
             </DPM_nonclean>
             <BLM>
@@ -736,4 +736,4 @@
          </SpeedSchedule>
       </SpeedScheduleList>
    </ARPM>
-</ns0:ACM>
+</bada40:ACM>

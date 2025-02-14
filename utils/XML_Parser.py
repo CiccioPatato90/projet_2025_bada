@@ -1,4 +1,5 @@
 import xml.etree.ElementTree as ET
+import math
 
 from numpy import integer
 
@@ -22,7 +23,7 @@ class XMLParser:
         elements = self.root.findall(f".//{tag_name}")
         res = []
         for elem in elements:
-            print(f"Found: {elem.tag} -> {elem.text}")
+            #print(f"Found: {elem.tag} -> {elem.text}")
             res.append(float(elem.text))
         return res
 
@@ -41,6 +42,18 @@ class XMLParser:
 
         self.tree.write(self.file_path, encoding="utf-8", xml_declaration=True)
         print(f"Updated {tag_name} to {new_value}.")
+
+    def modify_tag_NN(self, tag_name, new_value):
+        elements = self.root.findall(f".//{tag_name}")
+        if not elements:
+            print("No <CL_Clean> tag found.")
+            return
+        for elem, new_value in zip(elements, new_value):
+            if not(math.isnan(new_value)):
+                elem.text = str(new_value)
+
+        self.tree.write(self.file_path, encoding="utf-8", xml_declaration=True)
+        #print(f"Updated {tag_name} to {new_value}.")
 
 
 def change_multiple_tags(list_of_tags, dict_of_list_of_values, xml_parser):
