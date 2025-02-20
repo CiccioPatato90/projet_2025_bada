@@ -3,10 +3,14 @@ import glob
 from scipy.optimize import minimize
 import numpy as np
 import pandas as pd
+import re
 from utils.XML_Parser import XMLParser
 from pyBADA.bada4 import PTD
 from pyBADA.bada4 import Bada4Aircraft
 from pyBADA.bada4 import Parser as Bada4Parser
+
+from utils.tmp import altitude
+
 
 # TODO:
 # - STUDY SOLUTION SPACE:
@@ -18,6 +22,14 @@ from pyBADA.bada4 import Parser as Bada4Parser
 #   - (VAL1 - VAL2) / VAL1 --> ADD AS OUTPUT METRIC
 #   - Try to show min/max error, change CF
 
+def extract_altitude_and_isa(filename):
+    match = re.search(r"Altitude_(\d+(\.\d+)?)_ISA_([+-]?\d+(\.\d+)?)", filename)
+    if match:
+        altitude = float(match.group(1))
+        isa = float(match.group(3))
+        return altitude, isa
+    else:
+        raise ValueError(f"Altitude or ISA not found in filename: {filename}")
 
 def reinit_bada_xml():
     badaVersion = "DUMMY"
@@ -57,7 +69,8 @@ def rmse_cost_function(coefficients, tags, csv_files, xml_parser):
         drag_bada_updated = []
         for m, c in zip(mass, cas):
             try:
-                result = ptd.PTD_cruise_SKYCONSEIL([m], [30000], c, 0)
+                altitude, isa = extract_altitude_and_isa(file)
+                result = ptd.PTD_cruise_SKYCONSEIL([m], [altitude], c, isa)
                 drag_bada_updated.append(result[0][0])
             except Exception as e:
                 print(f"Error calculating BADA drag for {file}: {e}")
@@ -75,10 +88,12 @@ xml_parser = XMLParser("reference_dummy_extracted/Dummy-TWIN-plus/Dummy-TWIN-plu
 tags = ["CD_clean/d"]
 initial_guess = xml_parser.find_tag_coefficients(tags[0])
 
-csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_*.csv")
-if not csv_files:
-    raise FileNotFoundError("No CSV files found. Run tmp.py first.")
-
+if True:
+    csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_*.csv")
+    if not csv_files:
+        raise FileNotFoundError("No CSV files found. Run tmp.py first.")
+else:
+    csv_files = ["ptd_results/results_Altitude_35000.0_ISA_5.0.csv"]
 # Minimize RMSE
 if True:
     result = minimize(
@@ -87,17 +102,6 @@ if True:
         args=(tags, csv_files, xml_parser),  # Pass csv_files
         method="BFGS",
         options={"maxiter": 10000}
-    )
-else:
-    from scipy.optimize import basinhopping
-    result = basinhopping(
-        rmse_cost_function,
-        x0=initial_guess,
-        minimizer_kwargs={
-            "args": (tags, csv_files, xml_parser),  # Pass csv_files
-            "method": "BFGS"
-        },
-        niter=100
     )
 
 # Extract optimal coefficients

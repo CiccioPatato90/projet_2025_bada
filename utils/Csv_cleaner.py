@@ -2,7 +2,7 @@ import os
 import glob
 
 # Define the directory where the CSV files are located
-directory = "./"  # Modify this if your files are in a different directory
+directory = "../ptd_results"  # Modify this if your files are in a different directory
 
 # Find all CSV files that match the pattern
 csv_files = glob.glob(os.path.join(directory, "Altitude_*_ISA_*.csv"))

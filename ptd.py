@@ -16,6 +16,11 @@ SIGNIFICANT_DIGITS = 2
 def calculate_rmse_row(row):
     return np.sqrt((row["Drag_BADA"] - row["Drag_PRN"])**2)
 
+# Function to calculate Relative Error Percentage between two values (VAL1 - VAL2) / VAL1 --> ADD AS OUTPUT METRIC
+def calculate_relative_error_row(row):
+    relative_error = ((row["Drag_BADA"] - row["Drag_PRN"]) / row["Drag_BADA"]) * 100
+    return round(relative_error, 2 - len(str(int(abs(relative_error)))))
+
 badaVersion = "DUMMY"
 allData = Bada4Parser.parseAll(badaVersion=badaVersion, filePath="reference_dummy_extracted")
 print(allData)
@@ -54,6 +59,7 @@ for file_path in csv_files:
 
         results_df = pd.DataFrame(results, columns=["Mass", "CAS", "Drag_BADA", "Drag_PRN"])
         results_df["RMSE"] = results_df.apply(calculate_rmse_row, axis=1)
+        results_df["RelativeError"] = results_df.apply(calculate_relative_error_row, axis=1)
         base_name = os.path.basename(file_path)
         output_file_path = os.path.join(output_dir, f"results_{base_name}")
         results_df.to_csv(output_file_path, index=False)
@@ -67,12 +73,3 @@ for file_path in csv_files:
         print(f"Error processing {file_path}: {e}")
 
 all_results_df = pd.concat([pd.read_csv(f) for f in glob.glob("ptd_results/*.csv")], ignore_index=True)
-
-sns.lineplot(x="Mass", y="Drag_BADA", data=all_results_df, label="BADA")
-sns.lineplot(x="Mass", y="Drag_PRN", data=all_results_df, label="PRN")
-plt.xlabel("Mass")
-plt.ylabel("Drag")
-plt.title("Drag Comparison (All Files)")
-plt.legend()
-plt.savefig("drag_comparison.png")
-plt.show()
