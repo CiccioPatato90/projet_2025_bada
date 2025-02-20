@@ -2,14 +2,15 @@ import glob
 import os
 import re
 
-from matplotlib import pyplot as plt
 from pyBADA.bada4 import Bada4Aircraft
 from pyBADA.bada4 import Parser as Bada4Parser
 from pyBADA.bada4 import PTD
-import seaborn as sns
+
 
 import numpy as np
 import pandas as pd
+
+from utils.regex_parser import extract_altitude_and_isa
 
 SIGNIFICANT_DIGITS = 2
 
@@ -44,31 +45,25 @@ for file_path in csv_files:
     print(f"Processing: {file_path}")
 
     try:
-        # Extract altitude from the filename using regex
-        match = re.search(r"Altitude_([\d\.]+)_ISA", file_path)
-        if match:
-            altitude = float(match.group(1))  # Convert to integer
-        else:
-            print(f"Could not extract altitude from filename: {file_path}")
-            continue
-
         df = pd.read_csv(file_path)
-
         results = []
+        # here we use the regex since it's teh only reference we have from input file
+        altitude_extracted, isa_extracted = extract_altitude_and_isa(file_path)
+
         for _, row in df.iterrows():
             mass = row["WGHT (KG)"]
             cas = row["CAS (KT)"]
             drag_prn_val = row["DRAG (DAN)"]
 
             try:
-                result = ptd.PTD_cruise_SKYCONSEIL([mass], [altitude], cas, 0)
+                result = ptd.PTD_cruise_SKYCONSEIL([mass], [altitude_extracted], cas, isa_extracted)
                 drag_bada_val = result[0][0]
-                results.append([altitude, mass, cas, drag_bada_val, drag_prn_val * 10])
+                results.append([altitude_extracted, isa_extracted, mass, cas, drag_bada_val, drag_prn_val * 10])
             except Exception as e:
                 print(f"PTD Error: {e} for mass={mass}, cas={cas} in {file_path}")
                 continue
-
-        results_df = pd.DataFrame(results, columns=["Altitude", "Mass", "CAS", "Drag_BADA", "Drag_PRN"])
+        # from now on hte ISA is accessible from the ptd_results.csv file
+        results_df = pd.DataFrame(results, columns=["Altitude", "ISA","Mass", "CAS", "Drag_BADA", "Drag_PRN"])
         results_df["RMSE"] = results_df.apply(calculate_rmse_row, axis=1)
         results_df["RelativeError"] = results_df.apply(calculate_relative_error_row, axis=1)
 
@@ -80,21 +75,3 @@ for file_path in csv_files:
 
     except Exception as e:
         print(f"Error processing {file_path}: {e}")
-
-# Merge all processed CSV files
-all_results_df = pd.concat([pd.read_csv(f) for f in glob.glob("ptd_results/*.csv")], ignore_index=True)
-
-# Plot RMSE vs Altitude
-sns.lineplot(x="Altitude", y="RelativeError", data=all_results_df)
-plt.xlabel("Altitude (ft)")
-plt.ylabel("RelativeError")
-plt.title("RelativeError vs Altitude")
-plt.savefig("RelativeError_vs_altitude.png")
-plt.show()
-
-sns.lineplot(x="Mass", y="RelativeError", data=all_results_df)
-plt.xlabel("Mass (ft)")
-plt.ylabel("RelativeError")
-plt.title("RelativeError vs Mass")
-plt.savefig("RelativeError_vs_Mass.png")
-plt.show()
