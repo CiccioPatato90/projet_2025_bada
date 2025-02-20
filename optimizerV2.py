@@ -1,4 +1,5 @@
 import glob
+import re
 
 from scipy.optimize import minimize
 import numpy as np
@@ -34,6 +35,15 @@ def update_xml_coefficients(coefficients, tags, xml_parser):
     for tag in tags:
         xml_parser.modify_tag(tag, coefficients)
 
+def extract_altitude_and_isa(filename):
+    match = re.search(r"Altitude_(\d+(\.\d+)?)_ISA_([+-]?\d+(\.\d+)?)", filename)
+    if match:
+        altitude = float(match.group(1))
+        isa = float(match.group(3))
+        return altitude, isa
+    else:
+        raise ValueError(f"Altitude or ISA not found in filename: {filename}")
+
 def rmse_cost_function(coefficients, tags, csv_files, xml_parser):
     # Update XML coefficients in XML file
     update_xml_coefficients(coefficients, tags, xml_parser)
@@ -57,7 +67,8 @@ def rmse_cost_function(coefficients, tags, csv_files, xml_parser):
         drag_bada_updated = []
         for m, c in zip(mass, cas):
             try:
-                result = ptd.PTD_cruise_SKYCONSEIL([m], [30000], c, 0)
+                altitude, isa = extract_altitude_and_isa(file)
+                result = ptd.PTD_cruise_SKYCONSEIL([m], [altitude], c, isa)
                 drag_bada_updated.append(result[0][0])
             except Exception as e:
                 print(f"Error calculating BADA drag for {file}: {e}")
@@ -68,16 +79,17 @@ def rmse_cost_function(coefficients, tags, csv_files, xml_parser):
 
     overall_rmse = np.mean(all_rmse)  # Average RMSE across all files
     return overall_rmse  # Return the overall RMSE
-
 # We start by heuristics only on CD coefficients
 # XML Parser instance
 xml_parser = XMLParser("reference_dummy_extracted/Dummy-TWIN-plus/Dummy-TWIN-plus.xml")
 tags = ["CD_clean/d"]
 initial_guess = xml_parser.find_tag_coefficients(tags[0])
-
-csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_*.csv")
-if not csv_files:
-    raise FileNotFoundError("No CSV files found. Run tmp.py first.")
+if False:
+    csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_*.csv")
+    if not csv_files:
+        raise FileNotFoundError("No CSV files found. Run tmp.py first.")
+else:
+    csv_files = glob.glob("ptd_results/results_Altitude_*.0_ISA_0.0.csv")
 
 # Minimize RMSE
 if True:
