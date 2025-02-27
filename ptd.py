@@ -1,6 +1,5 @@
 import glob
 import os
-import re
 
 from pyBADA.bada4 import Bada4Aircraft
 from pyBADA.bada4 import Parser as Bada4Parser
@@ -15,12 +14,13 @@ from utils.regex_parser import extract_altitude_and_isa
 SIGNIFICANT_DIGITS = 2
 
 # Function to calculate RMSE between two values
-def calculate_rmse_row(row):
-    return np.sqrt((row["Drag_BADA"] - row["Drag_PRN"])**2)
+def calculate_rmse_row(row, value1, value2):
+    return np.sqrt((row[value1] - row[value2])**2)
 
-# Function to calculate Relative Error Percentage between two values (VAL1 - VAL2) / VAL1 --> ADD AS OUTPUT METRIC
-def calculate_relative_error_row(row):
-    relative_error = ((row["Drag_BADA"] - row["Drag_PRN"]) / row["Drag_BADA"]) * 100
+
+# Function to calculate Relative Error Percentage between two values (value1 - value2) / value1 --> ADD AS OUTPUT METRIC
+def calculate_relative_error_row(row, value1, value2):
+    relative_error = ((row[value1] - row[value2]) / row[value1]) * 100
     return round(relative_error, 2 - len(str(int(abs(relative_error)))))
 
 badaVersion = "DUMMY"
@@ -47,25 +47,33 @@ for file_path in csv_files:
     try:
         df = pd.read_csv(file_path)
         results = []
-        # here we use the regex since it's teh only reference we have from input file
+        # here we use the regex since it's the only reference we have from input file
         altitude_extracted, isa_extracted = extract_altitude_and_isa(file_path)
 
         for _, row in df.iterrows():
             mass = row["WGHT (KG)"]
             cas = row["CAS (KT)"]
             drag_prn_val = row["DRAG (DAN)"]
+            fuel_prn_val = row["WFE (KG/H)"]
 
             try:
                 result = ptd.PTD_cruise_SKYCONSEIL([mass], [altitude_extracted], cas, isa_extracted)
                 drag_bada_val = result[0][0]
-                results.append([altitude_extracted, isa_extracted, mass, cas, drag_bada_val, drag_prn_val * 10])
+                fuel_bada_val = result[1][0]
+                results.append([altitude_extracted, isa_extracted, mass, cas, drag_bada_val, drag_prn_val * 10, fuel_bada_val, fuel_prn_val])
             except Exception as e:
                 print(f"PTD Error: {e} for mass={mass}, cas={cas} in {file_path}")
                 continue
         # from now on hte ISA is accessible from the ptd_results.csv file
-        results_df = pd.DataFrame(results, columns=["Altitude", "ISA","Mass", "CAS", "Drag_BADA", "Drag_PRN"])
-        results_df["RMSE"] = results_df.apply(calculate_rmse_row, axis=1)
-        results_df["RelativeError"] = results_df.apply(calculate_relative_error_row, axis=1)
+        results_df = pd.DataFrame(results, columns=["Altitude", "ISA","Mass", "CAS", "Drag_BADA", "Drag_PRN", "Fuel_BADA", "Fuel_PRN"])
+        results_df["RMSE_Drag"] = results_df.apply(calculate_rmse_row, axis=1, value1=results_df["Drag_BADA"],
+                                              value2=results_df["Drag_PRN"])
+        results_df["RelativeError_Drag"] = results_df.apply(calculate_relative_error_row, axis=1,
+                                                       value1=results_df["Drag_BADA"], value2=results_df["Drag_PRN"])
+        results_df["RMSE_Fuel"] = results_df.apply(calculate_rmse_row, axis=1, value1=results_df["Fuel_BADA"],
+                                              value2=results_df["Fuel_PRN"])
+        results_df["RelativeError_Fuel"] = results_df.apply(calculate_relative_error_row, axis=1,
+                                                       value1=results_df["Fuel_BADA"], value2=results_df["Fuel_PRN"])
 
         # Save results
         base_name = os.path.basename(file_path)
