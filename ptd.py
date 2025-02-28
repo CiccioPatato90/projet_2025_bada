@@ -17,10 +17,17 @@ SIGNIFICANT_DIGITS = 2
 def calculate_rmse_row(row, value1, value2):
     return np.sqrt((row[value1] - row[value2])**2)
 
+def calculate_rmse(value1, value2):
+    return round(np.sqrt((value1 - value2)**2), SIGNIFICANT_DIGITS)
+
 
 # Function to calculate Relative Error Percentage between two values (value1 - value2) / value1 --> ADD AS OUTPUT METRIC
 def calculate_relative_error_row(row, value1, value2):
     relative_error = ((row[value1] - row[value2]) / row[value1]) * 100
+    return round(relative_error, 2 - len(str(int(abs(relative_error)))))
+
+def calculate_relative_error(value1, value2):
+    relative_error = abs(((value1 - value2) / value1) * 100)
     return round(relative_error, 2 - len(str(int(abs(relative_error)))))
 
 badaVersion = "DUMMY"
@@ -65,15 +72,23 @@ for file_path in csv_files:
                 print(f"PTD Error: {e} for mass={mass}, cas={cas} in {file_path}")
                 continue
         # from now on hte ISA is accessible from the ptd_results.csv file
+
         results_df = pd.DataFrame(results, columns=["Altitude", "ISA","Mass", "CAS", "Drag_BADA", "Drag_PRN", "Fuel_BADA", "Fuel_PRN"])
-        results_df["RMSE_Drag"] = results_df.apply(calculate_rmse_row, axis=1, value1=results_df["Drag_BADA"],
-                                              value2=results_df["Drag_PRN"])
-        results_df["RelativeError_Drag"] = results_df.apply(calculate_relative_error_row, axis=1,
-                                                       value1=results_df["Drag_BADA"], value2=results_df["Drag_PRN"])
-        results_df["RMSE_Fuel"] = results_df.apply(calculate_rmse_row, axis=1, value1=results_df["Fuel_BADA"],
-                                              value2=results_df["Fuel_PRN"])
-        results_df["RelativeError_Fuel"] = results_df.apply(calculate_relative_error_row, axis=1,
-                                                       value1=results_df["Fuel_BADA"], value2=results_df["Fuel_PRN"])
+
+        results_df["RMSE_Drag"] = results_df.apply(
+            lambda row: calculate_rmse(row["Drag_BADA"], row["Drag_PRN"]), axis=1
+        )
+
+        results_df["RelativeError_Drag"] = results_df.apply(
+            lambda row: calculate_relative_error(row["Drag_BADA"], row["Drag_PRN"]), axis=1
+        )
+        results_df["RMSE_Fuel"] = results_df.apply(
+            lambda row: calculate_rmse(row["Fuel_BADA"], row["Fuel_PRN"]), axis=1
+        )
+
+        results_df["RelativeError_Fuel"] = results_df.apply(
+            lambda row: calculate_relative_error(row["Fuel_BADA"], row["Fuel_PRN"]), axis=1
+        )
 
         # Save results
         base_name = os.path.basename(file_path)

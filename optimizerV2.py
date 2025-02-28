@@ -41,7 +41,6 @@ def rmse_cost_function(coefficients, tags, csv_files, xml_parser, optimise_for):
 
         mass = df["Mass"]
         cas = df["CAS"]
-        drag_prn = df["Drag_PRN"]
         isa = df["ISA"][0]
         altitude = df["Altitude"][0]
 
@@ -97,7 +96,7 @@ def optimize_mode(optimise_for, xml_parser, csv_files):
 xml_parser = XMLParser("reference_dummy_extracted/Dummy-TWIN-plus/Dummy-TWIN-plus.xml")
 tags = ["CD_clean/d", "CF/f"]
 if True:
-    csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_*.csv")
+    csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_-5.0.csv")
     if not csv_files:
         raise FileNotFoundError("No CSV files found. Run generate_ptd_inputs.py first.")
 # else:
