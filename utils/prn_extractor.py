@@ -45,6 +45,7 @@ for index, line in enumerate(lines):
 
 # Save each altitude-temperature block into a CSV
 for (altitude, temperature), rows in data_blocks.items():
+    if altitude != '40000.0':
         filename = f"Altitude_{altitude}_ISA_{temperature}.csv"
         filepath = os.path.join(output_dir, filename)  # Save in ptd_inputs folder
 
