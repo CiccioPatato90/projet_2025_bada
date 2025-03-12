@@ -9,13 +9,13 @@ from pyBADA.bada4 import Bada4Aircraft
 from pyBADA.bada4 import Parser as Bada4Parser
 
 def reinit_bada_xml():
-    badaVersion = "DUMMY"
-    allData = Bada4Parser.parseAll(badaVersion=badaVersion, filePath="reference_dummy_extracted")
+    bada_version = "DUMMY"
+    all_data = Bada4Parser.parseAll(badaVersion=bada_version, filePath="reference_dummy_extracted")
     # Create BADA Aircraft instance
     return Bada4Aircraft(
-        badaVersion=badaVersion,
+        badaVersion=bada_version,
         acName="Dummy-TWIN-plus",
-        allData=allData,
+        allData=all_data,
     )
 
 def update_xml_coefficients(coefficients, tags, xml_parser):
@@ -23,8 +23,7 @@ def update_xml_coefficients(coefficients, tags, xml_parser):
     for tag in tags:
         xml_parser.modify_tag(tag, coefficients)
 
-
-def rmse_cost_function(coefficients, tags, csv_files, xml_parser):
+def rmse_cost_function(coefficients, tags, csv_files, xml_parser, optimise_for):
     # Update XML coefficients in XML file
     update_xml_coefficients(coefficients, tags, xml_parser)
 
@@ -42,49 +41,66 @@ def rmse_cost_function(coefficients, tags, csv_files, xml_parser):
 
         mass = df["Mass"]
         cas = df["CAS"]
-        drag_prn = df["Drag_PRN"]
         isa = df["ISA"][0]
         altitude = df["Altitude"][0]
 
-        drag_bada_updated = []
+        if optimise_for == "drag":
+            observed_values = df["Drag_PRN"]
+            predicted_values = []
+            for m, c in zip(mass, cas):
+                try:
+                    result = ptd.PTD_cruise_SKYCONSEIL([m], [altitude], c, isa)
+                    predicted_values.append(result[0][0])
+                except Exception as e:
+                    print(f"Error calculating BADA drag for {file}: {e}")
+                    continue  # skip to the next data point
+        elif optimise_for == "fuel":
+            observed_values = df["Fuel_PRN"]
+            predicted_values = []
+            for m, c in zip(mass, cas):
+                try:
+                    result = ptd.PTD_cruise_SKYCONSEIL([m], [altitude], c, isa)
+                    predicted_values.append(result[1][0])
+                except Exception as e:
+                    print(f"Error calculating BADA fuel for {file}: {e}")
+                    continue
+        else:
+            raise ValueError("Invalid mode. Choose 'drag' or 'fuel'.")
 
-        for m, c in zip(mass, cas):
-            try:
-                result = ptd.PTD_cruise_SKYCONSEIL([m], [altitude], c, isa)
-                drag_bada_updated.append(result[0][0])
-            except Exception as e:
-                print(f"Error calculating BADA drag for {file}: {e}")
-                continue  # skip to the next data point
-
-        rmse = np.sqrt(np.mean((np.array(drag_bada_updated) - np.array(drag_prn)) ** 2))
+        rmse = np.sqrt(np.mean((np.array(predicted_values) - np.array(observed_values)) ** 2))
         all_rmse.append(rmse)
 
     overall_rmse = np.mean(all_rmse)  # Average RMSE across all files
     return overall_rmse  # Return the overall RMSE
+
+
+def optimize_mode(optimise_for, xml_parser, csv_files):
+    tags = ["CF/f"] if optimise_for == "fuel" else ["CD_clean/d"]
+    initial_guess = xml_parser.find_tag_coefficients(tags[0])
+
+    result = minimize(
+        rmse_cost_function,
+        x0=initial_guess,
+        args=(tags, csv_files, xml_parser, optimise_for),
+        method="BFGS",
+        options={"maxiter": 100}
+    )
+
+    print(f"Mode: {optimise_for}")
+    print("Optimal Coefficients:", result.x)
+    print("Minimized RMSE:", result.fun)
+    return result
+
 # We start by heuristics only on CD coefficients
 # XML Parser instance
 xml_parser = XMLParser("reference_dummy_extracted/Dummy-TWIN-plus/Dummy-TWIN-plus.xml")
-tags = ["CD_clean/d"]
-initial_guess = xml_parser.find_tag_coefficients(tags[0])
+tags = ["CD_clean/d", "CF/f"]
 if True:
-    csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_*.csv")
+    csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_-5.0.csv")
     if not csv_files:
         raise FileNotFoundError("No CSV files found. Run generate_ptd_inputs.py first.")
-else:
-    csv_files = glob.glob("ptd_results/results_Altitude_*.0_ISA_0.0.csv")
+# else:
+    # csv_files = glob.glob("ptd_results/results_Altitude_*.0_ISA_0.0.csv")
 
-# Minimize RMSE
-result = minimize(
-    rmse_cost_function,
-    x0=initial_guess,
-    args=(tags, csv_files, xml_parser),
-    method="BFGS",
-    options={"maxiter": 100}
-)
-
-# Extract optimal coefficients
-optimal_coefficients = result.x
-print("Optimal Coefficients:", optimal_coefficients)
-
-# Print minimized RMSE
-print("Minimized RMSE:", result.fun)
+result_drag = optimize_mode("drag", xml_parser, csv_files)
+result_fuel = optimize_mode("fuel", xml_parser, csv_files)
