@@ -108,7 +108,7 @@ def optimize_mode(optimise_for, xml_parser, csv_files):
         x0=initial_guess,
         args=(tags, csv_files, xml_parser, optimise_for),
         method="BFGS",
-        options={"maxiter": 100}
+        options={"maxiter": 200}
     )
 
     print(f"Mode: {optimise_for}")
@@ -139,14 +139,14 @@ def optimize_mode_joint(xml_parser, csv_files):
 xml_parser = XMLParser("reference_dummy_extracted/Dummy-TWIN-plus/Dummy-TWIN-plus.xml")
 tags = ["CD_clean/d", "CF/f"]
 if True:
-    csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_0.0.csv")
+    csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_*.csv")
     if not csv_files:
         raise FileNotFoundError("No CSV files found. Run ptd.py first.")
 # else:
     # csv_files = glob.glob("ptd_results/results_Altitude_*.0_ISA_0.0.csv")
 
-result = optimize_mode_joint(xml_parser, csv_files)
-print(result)
+#result = optimize_mode_joint(xml_parser, csv_files)
 
-'''result_drag = optimize_mode("drag", xml_parser, csv_files)
-result_fuel = optimize_mode("fuel", xml_parser, csv_files)'''
+
+#result_drag = optimize_mode("drag", xml_parser, csv_files)
+result_fuel = optimize_mode("fuel", xml_parser, csv_files)

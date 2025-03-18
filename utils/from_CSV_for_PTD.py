@@ -9,32 +9,17 @@ R = 287.05  # constant gas
 rho0 = 1.225  # Air density at sea level (kg/m³)
 
 
-def calculate_tas(computed_airspeed, altitude, temperature):
-    P0 = 101325
-    lapse_rate = 0.0065
-    T0 = 288.15
-
-    if altitude <= 11000:
-        P = P0 * (1 - (lapse_rate * altitude / T0)) ** (9.80665 / (lapse_rate * R))
-    else:
-        P = 22632 * np.exp(-9.80665 * (altitude - 11000) / (R * 216.65))
-
-    rho = P / (R * temperature)
-    tas = computed_airspeed * np.sqrt(rho0 / rho)
+def calculate_tas(mach, temperature):
+    heat_ratio=1.4
+    tas = mach* np.sqrt(R*heat_ratio*temperature)
     return tas
 
 
 def calculate_isa_deviation(altitude_feet, temperature_real):
     T0 = 15.0
-    lapse_rate = 0.0065
-    altitude_meters = altitude_feet * 0.3048
-    T_ISA = T0 - (2* altitude_meters)/1000
+    T_ISA = T0 - (1.98* altitude_feet)/1000
     delta_T = temperature_real - T_ISA
     return delta_T
-
-def calculate_wfe(instant_fuel, ground_speed):
-    wfe = instant_fuel / ground_speed
-    return wfe
 
 
 def calculate_Drag():
@@ -60,13 +45,12 @@ try:
     df_filtered['CAS (KT)'] = df_filtered['Computed_Airspeed']
 
     df_filtered['TAS (KT)'] = df_filtered.apply(
-        lambda row: calculate_tas(row['Computed_Airspeed'], row['Altitude'], row['T_Air_Temp'] + 273.15),
+        lambda row: calculate_tas(row['MACH'], row['T_Air_Temp'] + 273.15),
         axis=1
     )
 
     df_filtered['SR (NMKG)'] = 0
-    df_filtered['WFE (KG/H)'] = calculate_wfe(df_filtered['Instant_Fuel'], df_filtered[
-        'TAS (KT)'])
+    df_filtered['WFE (KG/H)'] = df_filtered['Instant_Fuel']
     df_filtered['N1 (%)'] = df_filtered['N1_E1']
     df_filtered['EGT (DG.C)'] = df_filtered['EGT_E1']
     df_filtered['CL'] = 0
@@ -85,7 +69,7 @@ try:
     # Save each row to a separate CSV file
     for i in range(len(df_final)):
         altitude = int(df_filtered['Altitude'].iloc[i])
-        isa = calculate_isa_deviation(df_filtered['Altitude'].iloc[i], df_filtered['T_Air_Temp'].iloc[i])
+        isa = round(calculate_isa_deviation(df_filtered['Altitude'].iloc[i], df_filtered['T_Air_Temp'].iloc[i]),2)
         df_final.iloc[i:i + 1].to_csv(os.path.join(output_dir, f'Altitude_{altitude}_ISA_{isa}.csv'), index=False)
 
     # Save the entire filtered data to a CSV file
