@@ -1,8 +1,5 @@
 import xml.etree.ElementTree as ET
 
-from numpy import integer
-
-
 class XMLParser:
     def __init__(self, file_path):
         self.file_path = file_path
@@ -57,16 +54,3 @@ def change_multiple_tags(list_of_tags, dict_of_list_of_values, xml_parser):
             tab = xml_parser.find_tag(tag)
             xml_parser.modify_tag(tag, dict_of_list_of_values[tag])
             xml_parser.find_tag(tag)
-"""
-xml_parser = XMLParser("../reference_dummy_extracted/Dummy-TWIN-plus/Dummy-TWIN-plus.xml")
-list_of_tags = ["CD_clean/d","CL_clean/bf","CD_nonclean/d"]
-array_0 = [0] * xml_parser.len_tags(list_of_tags[0])
-array_1 = [0, 1, 2, 3, 4]
-array_2 = None
-dict_of_list_of_values = {}
-arrays = [array_0, array_1, array_2]
-for i, tag in enumerate(list_of_tags):
-    dict_of_list_of_values[tag] = arrays[i]
-print(dict_of_list_of_values)
-change_multiple_tags(list_of_tags, dict_of_list_of_values)
-"""
