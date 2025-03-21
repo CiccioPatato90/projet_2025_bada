@@ -1,3 +1,5 @@
+# This file contains the uptdated library of bada4.py with our two functions
+# PTD_cruise_SKYCONSEIL(self, massList, altitudeList, cas, DeltaTemp); and PTD_cruise_BEAM_SKYCONSEIL(self, mass, altitude, cas, isa, drag):
 # -*- coding: utf-8 -*-
 """
 pyBADA
@@ -165,6 +167,7 @@ class Parser:
         # set all the parameters to NONE as a default
         a = None
         f = None
+        beam_coeffs = None
         b = None
         c = None
         ti = None
@@ -192,6 +195,14 @@ class Parser:
             f = []
             for i in CF.findall("f"):
                 f.append(float(i.text))  # FF polynomial coefficients
+
+            CF_BEAM = TFM.find("CF_BEAM")  # Locate BEAM coefficients in XML
+
+            beam_coeffs = []  # Initialize as an empty list
+            if CF_BEAM is not None:
+                beam_coeffs = [float(i.text) for i in CF_BEAM.findall("b")]
+            else:
+                print("WARNING: CF_BEAM coefficients not found in XML!")
 
             b = {}
             c = {}
@@ -250,6 +261,14 @@ class Parser:
             f = []
             for i in CF.findall("f"):
                 f.append(float(i.text))  # FF polynomial coefficients
+
+            CF_BEAM = TFM.find("CF_BEAM") # BEAM Fuel flow coefficients
+
+            beam_coeffs = []
+            if CF_BEAM is not None:
+                beam_coeffs = [float(i.text) for i in CF_BEAM.findall("b")] # BEAM polynomial coefficients
+            else:
+                print("WARNING: CF_BEAM coefficients not found in XML!")
 
             for rating in ["MCMB", "MCRZ"]:
                 ENG = TPM.find(rating)
@@ -486,6 +505,7 @@ class Parser:
             "p_theta": [p_theta],
             "a": [a],
             "f": [f],
+            "beam_coeffs": [beam_coeffs],
             "b": [b],
             "c": [c],
             "ti": [ti],
@@ -4486,7 +4506,7 @@ class PTD(BADA4):
         mass_complet = []
         Thrust_complet = []
         Drag_complet = []
-        ff_complet = []
+        ff_comlet = []
         ESF_complet = []
         ROCD_complet = []
         gamma_complet = []
@@ -4600,7 +4620,7 @@ class PTD(BADA4):
             mass_complet.append(mass)
             Thrust_complet.append(Thrust)
             Drag_complet.append(Drag)
-            ff_complet.append(ff)
+            ff_comlet.append(ff)
             ESF_complet.append(ESF)
             ROCD_complet.append(ROCD)
             gamma_complet.append(gamma)
@@ -4619,7 +4639,7 @@ class PTD(BADA4):
             mass_complet,
             Thrust_complet,
             Drag_complet,
-            ff_complet,
+            ff_comlet,
             ESF_complet,
             ROCD_complet,
             gamma_complet,
@@ -4857,7 +4877,7 @@ class PTD(BADA4):
         mass_complet = []
         Thrust_complet = []
         Drag_complet = []
-        ff_complet = []
+        ff_comlet = []
         ESF_complet = []
         ROCD_complet = []
         gamma_complet = []
@@ -4932,7 +4952,7 @@ class PTD(BADA4):
             mass_complet.append(mass)
             Thrust_complet.append(Thrust)
             Drag_complet.append(Drag)
-            ff_complet.append(ff)
+            ff_comlet.append(ff)
             ESF_complet.append(ESF)
             ROCD_complet.append(ROCD)
             gamma_complet.append(gamma)
@@ -4951,7 +4971,7 @@ class PTD(BADA4):
             mass_complet,
             Thrust_complet,
             Drag_complet,
-            ff_complet,
+            ff_comlet,
             ESF_complet,
             ROCD_complet,
             gamma_complet,
@@ -5110,6 +5130,36 @@ class PTD(BADA4):
 
         return CRList
 
+    import numpy as np
+
+    def PTD_cruise_BEAM_SKYCONSEIL(self, mass, altitude, cas, isa, drag):
+        """
+        Computes the fuel flow during cruise using the generalized BEAM fuel model.
+
+        :param mass: Aircraft mass [kg]
+        :param altitude: Altitude [ft]
+        :param cas: Calibrated airspeed [kt]
+        :param isa: ISA temperature deviation [°C]
+        :param drag: Drag force [N]
+        :return: Fuel flow [kg/s]
+        """
+
+        # Retrieve BEAM coefficients
+        f0, f1, f2, f3, f4, f5 = self.AC.beam_coeffs
+
+        # Convert altitude to meters
+        altitude_m = conv.ft2m(altitude)
+
+        # Compute atmospheric properties
+        theta, delta, sigma = atm.atmosphereProperties(h=altitude_m, DeltaTemp=isa)
+
+        # Convert CAS to TAS
+        tas = atm.cas2Tas(cas=cas, delta=delta, sigma=sigma)
+
+        # Compute fuel flow using BEAM model
+        fuel_flow = f5 * (f0 - f1 * altitude + (f2 + f3 * tas - f4 * (tas ** 2)) * drag)
+
+        return fuel_flow
 
 class PTF(BADA4):
     """This class implements the PTF file creator for BADA4 aircraft following BADA4 manual.
@@ -5878,6 +5928,7 @@ class Bada4Aircraft(BADA4):
             self.p = configuration.safe_get(filtered_df, "p", None)
             self.a = configuration.safe_get(filtered_df, "a", None)
             self.f = configuration.safe_get(filtered_df, "f", None)
+            self.beam_coeffs = configuration.safe_get(filtered_df, "beam_coeffs", None)
             self.ti = configuration.safe_get(filtered_df, "ti", None)
             self.fi = configuration.safe_get(filtered_df, "fi", None)
             self.throttle = configuration.safe_get(
@@ -6050,6 +6101,7 @@ class Bada4Aircraft(BADA4):
                     self.p = configuration.safe_get(combined_df, "p", None)
                     self.a = configuration.safe_get(combined_df, "a", None)
                     self.f = configuration.safe_get(combined_df, "f", None)
+                    self.beam_coeffs = configuration.safe_get(combined_df, "beam_coeffs", None)
                     self.ti = configuration.safe_get(combined_df, "ti", None)
                     self.fi = configuration.safe_get(combined_df, "fi", None)
                     self.throttle = configuration.safe_get(

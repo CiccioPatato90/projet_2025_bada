@@ -64,7 +64,7 @@ for file_path in csv_files:
 
             try:
                 result = ptd.PTD_cruise_SKYCONSEIL([mass], [altitude_extracted], cas, isa_extracted)
-                result_BEAM = ptd.PTD_cruise_BEAM(mass, altitude_extracted, cas, isa_extracted, drag_prn_val * 10)
+                result_BEAM = ptd.PTD_cruise_BEAM_SKYCONSEIL(mass, altitude_extracted, cas, isa_extracted, drag_prn_val * 10)
                 fuel_beam_val = result_BEAM
 
                 drag_bada_val = result[0][0]

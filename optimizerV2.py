@@ -69,7 +69,7 @@ def rmse_cost_function(coefficients, tags, csv_files, xml_parser, optimise_for):
             predicted_values = []
             for m, c, drag in zip(mass, cas, drag):
                 try:
-                    result = ptd.PTD_cruise_BEAM(m, altitude, c, isa, drag)
+                    result = ptd.PTD_cruise_BEAM_SKYCONSEIL(m, altitude, c, isa, drag)
                     predicted_values.append(result)
                 except Exception as e:
                     print(f"Error calculating BEAM fuel for {file}: {e}")
@@ -92,7 +92,7 @@ def optimize_mode(optimise_for, xml_parser, csv_files):
     elif optimise_for == "fuel_beam":
         tags = ["CF_BEAM/b"]
     else:
-        raise ValueError("Invalid mode. Choose 'drag', 'fuel', or 'beam'.")
+        raise ValueError("Invalid mode. Choose 'drag', 'fuel', or 'fuel_beam'.")
 
     initial_guess = xml_parser.find_tag_coefficients(tags[0])
 
@@ -101,7 +101,7 @@ def optimize_mode(optimise_for, xml_parser, csv_files):
         x0=initial_guess,
         args=(tags, csv_files, xml_parser, optimise_for),
         method="BFGS",
-        options={"maxiter": 10000}
+        options={"maxiter": 100}
     )
 
     print(f"Mode: {optimise_for}")
@@ -109,12 +109,11 @@ def optimize_mode(optimise_for, xml_parser, csv_files):
     print("Minimized RMSE:", result.fun)
     return result
 
-# We start by heuristics only on CD coefficients
 # XML Parser instance
 xml_parser = XMLParser("reference_dummy_extracted/Dummy-TWIN-plus/Dummy-TWIN-plus.xml")
 tags = ["CD_clean/d", "CF/f", "CF_BEAM/b"]
 if True:
-    csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_-5.0.csv")
+    csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_*.csv")
     if not csv_files:
         raise FileNotFoundError("No CSV files found. Run generate_ptd_inputs.py first.")
 # else:
