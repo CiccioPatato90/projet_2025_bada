@@ -1,5 +1,3 @@
-# This file contains the uptdated library of bada4.py with our two functions
-# PTD_cruise_SKYCONSEIL(self, massList, altitudeList, cas, DeltaTemp); and PTD_cruise_BEAM_SKYCONSEIL(self, mass, altitude, cas, isa, drag):
 # -*- coding: utf-8 -*-
 """
 pyBADA
@@ -8,7 +6,7 @@ Developed @EUROCONTROL (EIH)
 2024
 """
 
-from math import sqrt, pow, pi, isnan, sin, asin
+from math import sqrt, pow, pi, isnan, sin, asin, cos
 
 import numpy as np
 import os
@@ -167,7 +165,8 @@ class Parser:
         # set all the parameters to NONE as a default
         a = None
         f = None
-        beam_coeffs = None
+        beam_fuel_coeffs = None
+        beam_drag_coeffs = None
         b = None
         c = None
         ti = None
@@ -198,9 +197,9 @@ class Parser:
 
             CF_BEAM = TFM.find("CF_BEAM")  # Locate BEAM coefficients in XML
 
-            beam_coeffs = []  # Initialize as an empty list
+            beam_fuel_coeffs = []  # Initialize as an empty list
             if CF_BEAM is not None:
-                beam_coeffs = [float(i.text) for i in CF_BEAM.findall("b")]
+                beam_fuel_coeffs = [float(i.text) for i in CF_BEAM.findall("b")]
             else:
                 print("WARNING: CF_BEAM coefficients not found in XML!")
 
@@ -264,9 +263,9 @@ class Parser:
 
             CF_BEAM = TFM.find("CF_BEAM") # BEAM Fuel flow coefficients
 
-            beam_coeffs = []
+            beam_fuel_coeffs = []
             if CF_BEAM is not None:
-                beam_coeffs = [float(i.text) for i in CF_BEAM.findall("b")] # BEAM polynomial coefficients
+                beam_fuel_coeffs = [float(i.text) for i in CF_BEAM.findall("b")] # BEAM polynomial coefficients
             else:
                 print("WARNING: CF_BEAM coefficients not found in XML!")
 
@@ -362,6 +361,11 @@ class Parser:
                             d[HLid]["LGUP"] = []
                             for i in CD.findall("d"):
                                 d[HLid]["LGUP"].append(float(i.text))
+
+                    CD_BEAM = DPM.find("CD_BEAM")
+                    beam_drag_coeffs = []
+                    for i in CD_BEAM.findall("d"):
+                        beam_drag_coeffs.append(float(i.text))
 
                 BLM = LGUP.find("BLM")
 
@@ -505,7 +509,8 @@ class Parser:
             "p_theta": [p_theta],
             "a": [a],
             "f": [f],
-            "beam_coeffs": [beam_coeffs],
+            "beam_fuel_coeffs": [beam_fuel_coeffs],
+            "beam_drag_coeffs": [beam_drag_coeffs],
             "b": [b],
             "c": [c],
             "ti": [ti],
@@ -5132,7 +5137,7 @@ class PTD(BADA4):
 
     import numpy as np
 
-    def PTD_cruise_BEAM_SKYCONSEIL(self, mass, altitude, cas, isa, drag):
+    def PTD_cruise_BEAM_SKYCONSEIL(self, mass, altitude, cas, isa, gamma, phi, Mach):
         """
         Computes the fuel flow during cruise using the generalized BEAM fuel model.
 
@@ -5145,7 +5150,9 @@ class PTD(BADA4):
         """
 
         # Retrieve BEAM coefficients
-        f0, f1, f2, f3, f4, f5 = self.AC.beam_coeffs
+        f0, f1, f2, f3, f4, f5 = self.AC.beam_fuel_coeffs
+
+        d0, d2, d16 = self.AC.beam_drag_coeffs
 
         # Convert altitude to meters
         altitude_m = conv.ft2m(altitude)
@@ -5156,8 +5163,13 @@ class PTD(BADA4):
         # Convert CAS to TAS
         tas = atm.cas2Tas(cas=cas, delta=delta, sigma=sigma)
 
+        rho = sigma * const.rho_0
+
+        D = (d0 * rho * tas ** 2 + d2 * (mass ** 2 * np.cos(gamma) ** 2) / (
+                    rho * tas ** 2 * np.cos(phi) ** 2)) * (1 + d16 * Mach ** 16)
+
         # Compute fuel flow using BEAM model
-        fuel_flow = f5 * (f0 - f1 * altitude + (f2 + f3 * tas - f4 * (tas ** 2)) * drag)
+        fuel_flow = f5 * (f0 - f1 * altitude + (f2 + f3 * tas - f4 * (tas ** 2)) * D)
 
         return fuel_flow
 
@@ -5928,7 +5940,8 @@ class Bada4Aircraft(BADA4):
             self.p = configuration.safe_get(filtered_df, "p", None)
             self.a = configuration.safe_get(filtered_df, "a", None)
             self.f = configuration.safe_get(filtered_df, "f", None)
-            self.beam_coeffs = configuration.safe_get(filtered_df, "beam_coeffs", None)
+            self.beam_fuel_coeffs = configuration.safe_get(filtered_df, "beam_fuel_coeffs", None)
+            self.beam_drag_coeffs = configuration.safe_get(filtered_df, "beam_drag_coeffs", None)
             self.ti = configuration.safe_get(filtered_df, "ti", None)
             self.fi = configuration.safe_get(filtered_df, "fi", None)
             self.throttle = configuration.safe_get(
@@ -6101,7 +6114,8 @@ class Bada4Aircraft(BADA4):
                     self.p = configuration.safe_get(combined_df, "p", None)
                     self.a = configuration.safe_get(combined_df, "a", None)
                     self.f = configuration.safe_get(combined_df, "f", None)
-                    self.beam_coeffs = configuration.safe_get(combined_df, "beam_coeffs", None)
+                    self.beam_fuel_coeffs = configuration.safe_get(combined_df, "beam_fuel_coeffs", None)
+                    self.beam_drag_coeffs = configuration.safe_get(combined_df, "beam_drag_coeffs", None)
                     self.ti = configuration.safe_get(combined_df, "ti", None)
                     self.fi = configuration.safe_get(combined_df, "fi", None)
                     self.throttle = configuration.safe_get(

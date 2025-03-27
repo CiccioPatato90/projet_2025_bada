@@ -6,7 +6,7 @@ output_dir = os.path.join(os.path.dirname(__file__), "../ptd_inputs")
 os.makedirs(output_dir, exist_ok=True)  # Ensure the directory exists
 
 # Open the PRN file for reading
-with open("../reference_skyconseil/A330_example.prn", "r") as file:
+with open("../reference_skyconseil/FDR-input.csv", "r") as file:
     lines = file.readlines()
 
 # Regular expressions to detect altitude, temperature, and data rows
