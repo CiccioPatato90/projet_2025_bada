@@ -12,19 +12,7 @@ pattern = f"ptd_results/results_Altitude_*_ISA_{isa_value}.csv"
 all_results_df = pd.concat([pd.read_csv(f) for f in glob.glob(pattern)], ignore_index=True)
 
 # Define a threshold for high relative error drag
-high_error_threshold = 3  # Adjust this value as needed
-
-# Check if any relative error drag is high
-high_error_mask = all_results_df['RelativeError_Drag'] > high_error_threshold
-if high_error_mask.any():
-    print("Warning: High relative error drag detected!")
-    # Extract the altitude and mass for high relative error drag
-    high_error_data = all_results_df[high_error_mask][['Altitude', 'Mass', 'RelativeError_Drag']]
-    print("Altitude and Mass for high relative error drag:")
-    print(high_error_data)
-else:
-    print("No high relative error drag detected.")
-
+high_error_threshold = 0  # Adjust this value as needed
 high_error_mask = all_results_df['RelativeError_Fuel'] > high_error_threshold
 if high_error_mask.any():
     print("Warning: High relative error fuel detected!")
