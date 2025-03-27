@@ -20,7 +20,6 @@ def calculate_rmse_row(row, value1, value2):
 def calculate_rmse(value1, value2):
     return round(np.sqrt((value1 - value2)**2), SIGNIFICANT_DIGITS)
 
-
 # Function to calculate Relative Error Percentage between two values (value1 - value2) / value1 --> ADD AS OUTPUT METRIC
 def calculate_relative_error_row(row, value1, value2):
     relative_error = ((row[value1] - row[value2]) / row[value1]) * 100
@@ -65,15 +64,17 @@ for file_path in csv_files:
 
             try:
                 result = ptd.PTD_cruise_SKYCONSEIL([mass], [altitude_extracted], cas, isa_extracted)
+                result_BEAM = ptd.PTD_cruise_BEAM_SKYCONSEIL(mass, altitude_extracted, cas, isa_extracted, drag_prn_val * 10)
+                fuel_beam_val = result_BEAM
+
                 drag_bada_val = result[0][0]
                 fuel_bada_val = result[1][0]
-                results.append([altitude_extracted, isa_extracted, mass, cas, drag_bada_val, drag_prn_val * 10, fuel_bada_val, fuel_prn_val])
+                results.append([altitude_extracted, isa_extracted, mass, cas, drag_bada_val, drag_prn_val * 10, fuel_bada_val, fuel_beam_val, fuel_prn_val])
             except Exception as e:
                 print(f"PTD Error: {e} for mass={mass}, cas={cas} in {file_path}")
                 continue
         # from now on hte ISA is accessible from the ptd_results.csv file
-
-        results_df = pd.DataFrame(results, columns=["Altitude", "ISA","Mass", "CAS", "Drag_BADA", "Drag_PRN", "Fuel_BADA", "Fuel_PRN"])
+        results_df = pd.DataFrame(results, columns=["Altitude", "ISA","Mass", "CAS", "Drag_BADA", "Drag_PRN", "Fuel_BADA", "Fuel_BEAM", "Fuel_PRN"])
 
         results_df["RMSE_Drag"] = results_df.apply(
             lambda row: calculate_rmse(row["Drag_BADA"], row["Drag_PRN"]), axis=1
@@ -88,6 +89,14 @@ for file_path in csv_files:
 
         results_df["RelativeError_Fuel"] = results_df.apply(
             lambda row: calculate_relative_error(row["Fuel_BADA"], row["Fuel_PRN"]), axis=1
+        )
+
+        results_df["RMSE_Fuel_BEAM"] = results_df.apply(
+            lambda row: calculate_rmse(row["Fuel_BEAM"], row["Fuel_PRN"]), axis=1
+        )
+
+        results_df["RelativeError_Fuel_BEAM"] = results_df.apply(
+            lambda row: calculate_relative_error(row["Fuel_BEAM"], row["Fuel_PRN"]), axis=1
         )
 
         # Save results

@@ -19,7 +19,6 @@ def reinit_bada_xml():
     )
 
 def update_xml_coefficients(coefficients, tags, xml_parser):
-    #dict_of_values = {tags[i]: [coefficients[i]] * xml_parser.len_tags(tags[i]) for i in range(len(tags))}
     for tag in tags:
         xml_parser.modify_tag(tag, coefficients)
 
@@ -46,6 +45,7 @@ def rmse_cost_function(coefficients, tags, csv_files, xml_parser, optimise_for):
 
         mass = df["Mass"]
         cas = df["CAS"]
+        drag = df["Drag_PRN"]
         isa = df["ISA"][0]
         altitude = df["Altitude"][0]
 
@@ -89,8 +89,18 @@ def rmse_cost_function(coefficients, tags, csv_files, xml_parser, optimise_for):
             rmse = rmse_drag + rmse_fuel
             all_rmse.append(rmse)
             continue
+        elif optimise_for == "fuel_beam":
+            observed_values = df["Fuel_PRN"]
+            predicted_values = []
+            for m, c, drag in zip(mass, cas, drag):
+                try:
+                    result = ptd.PTD_cruise_BEAM_SKYCONSEIL(m, altitude, c, isa, drag)
+                    predicted_values.append(result)
+                except Exception as e:
+                    print(f"Error calculating BEAM fuel for {file}: {e}")
+                    continue
         else:
-            raise ValueError("Invalid mode. Choose 'drag' or 'fuel'.")
+            raise ValueError("Invalid mode. Choose 'drag', 'fuel', 'joint' or 'fuel_beam'.")
 
         rmse = np.sqrt(np.mean((np.array(predicted_values) - np.array(observed_values)) ** 2))
         all_rmse.append(rmse)
@@ -100,7 +110,15 @@ def rmse_cost_function(coefficients, tags, csv_files, xml_parser, optimise_for):
 
 
 def optimize_mode(optimise_for, xml_parser, csv_files):
-    tags = ["CF/f"] if optimise_for == "fuel" else ["CD_clean/d"]
+    if optimise_for == "fuel":
+        tags = ["CF/f"]
+    elif optimise_for == "drag":
+        tags = ["CD_clean/d"]
+    elif optimise_for == "fuel_beam":
+        tags = ["CF_BEAM/b"]
+    else:
+        raise ValueError("Invalid mode. Choose 'drag', 'fuel', or 'fuel_beam'.")
+
     initial_guess = xml_parser.find_tag_coefficients(tags[0])
 
     result = minimize(
@@ -134,10 +152,9 @@ def optimize_mode_joint(xml_parser, csv_files):
     print("Minimized RMSE:", result.fun)
     return result
 
-# We start by heuristics only on CD coefficients
 # XML Parser instance
 xml_parser = XMLParser("reference_dummy_extracted/Dummy-TWIN-plus/Dummy-TWIN-plus.xml")
-tags = ["CD_clean/d", "CF/f"]
+tags = ["CD_clean/d", "CF/f", "CF_BEAM/b"]
 if True:
     csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_*.csv")
     if not csv_files:
@@ -150,3 +167,6 @@ if True:
 
 #result_drag = optimize_mode("drag", xml_parser, csv_files)
 result_fuel = optimize_mode("fuel", xml_parser, csv_files)
+# result_drag = optimize_mode("drag", xml_parser, csv_files)
+# result_fuel = optimize_mode("fuel", xml_parser, csv_files)
+result_fuel_beam = optimize_mode("fuel_beam", xml_parser, csv_files)
