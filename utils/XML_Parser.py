@@ -26,18 +26,18 @@ class XMLParser:
     def modify_tag(self, tag_name, new_value):
         elements = self.root.findall(f".//{tag_name}")
         if not elements:
-            print("No <CL_Clean> tag found.")
+            print(f"No {tag_name} tag found.")
             return
 
         if len(new_value) != len(elements):
-            print(f"Error: Provided {len(new_value)} values, but found {len(elements)} elements.")
+            print(f"Error: For {tag_name} provided {len(new_value)} values, but found {len(elements)} elements.")
             return
 
         for elem, new_value in zip(elements, new_value):
             elem.text = str(new_value)
 
         self.tree.write(self.file_path, encoding="utf-8", xml_declaration=True)
-        print(f"Updated {tag_name} to {new_value}.")
+        print(f"Updated {tag_name} to {new_value}")
 
 
 def change_multiple_tags(list_of_tags, dict_of_list_of_values, xml_parser):
