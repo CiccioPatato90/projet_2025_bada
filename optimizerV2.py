@@ -113,7 +113,7 @@ def optimize_mode_joint(optimise_for, xml_parser, csv_files):
         x0=initial_guess,
         args=(tags, csv_files, xml_parser, optimise_for),
         method="BFGS",
-        options={"maxiter": 300}
+        options={"maxiter": 400}
     )
 
     print("Optimal Coefficients:")
@@ -128,7 +128,7 @@ def optimize_mode_joint(optimise_for, xml_parser, csv_files):
 
 # Main Execution
 xml_parser = XMLParser("reference_dummy_extracted/Dummy-TWIN-plus/Dummy-TWIN-plus.xml")
-csv_files = glob.glob("ptd_results/results_A319_Altitude_*_ISA_*.csv")
+csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_*.csv")
 
 if not csv_files:
     raise FileNotFoundError("No CSV files found. Run generate_ptd_inputs.py first.")

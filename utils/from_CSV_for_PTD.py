@@ -37,7 +37,7 @@ def process_file(file_path):
 
         columns_needed = [
             'Computed_Airspeed', 'Mach', 'Pitch_Angle', 'Altitude',
-            'Gross_Weight', 'T_Air_Temp', 'EGT_E1', 'N1_E1', 'Instant_Fuel'
+            'Gross_Weight', 'T_Air_Temp', 'EGT_E1', 'N1_E1', 'Instant_Fuel','Roll_Angle'
         ]
         df_filtered = df_filtered[columns_needed]
 
@@ -58,6 +58,8 @@ def process_file(file_path):
         df_filtered['DRAG (DAN)'] = calculate_drag()
         df_filtered['FN (DAN)'] = 0
         df_filtered['PCFN (%)'] = 0
+        df_filtered['ROLL (DEG)'] = df_filtered['Roll_Angle']
+        df_filtered['PATH (DEG)'] = 0 #since cruise
 
         df_filtered['ISA_DEV'] = df_filtered.apply(
             lambda row: calculate_isa_deviation(row['Altitude'], row['T_Air_Temp']),
@@ -66,7 +68,7 @@ def process_file(file_path):
 
         final_columns = [
             'WGHT (KG)', 'MACH', 'CAS (KT)', 'TAS (KT)', 'SR (NMKG)', 'WFE (KG/H)',
-            'N1 (%)', 'EGT (DG.C)', 'CL', 'CD', 'ALPH (DEG)', 'DRAG (DAN)', 'FN (DAN)', 'PCFN (%)',
+            'ROLL (DEG)','PATH (DEG)','N1 (%)', 'EGT (DG.C)', 'CL', 'CD', 'ALPH (DEG)', 'DRAG (DAN)', 'FN (DAN)', 'PCFN (%)',
             'Altitude', 'ISA_DEV'
         ]
         df_final = df_filtered[final_columns]

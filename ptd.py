@@ -29,10 +29,11 @@ AC = Bada4Aircraft(badaVersion=BADA_VERSION, acName="Dummy-TWIN-plus", allData=a
 
 # Prepare for output
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-csv_files = glob.glob(f"{INPUT_DIR}/A319_Altitude_*_ISA_*.csv")
+csv_files = glob.glob(f"{INPUT_DIR}/Altitude_*_ISA_*.csv")
 ptd = PTD(AC)
 
 # Processing CSV files
+
 for file_path in csv_files:
     print(f"Processing: {file_path}")
     try:
