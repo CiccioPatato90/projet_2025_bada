@@ -29,7 +29,7 @@ AC = Bada4Aircraft(badaVersion=BADA_VERSION, acName="Dummy-TWIN-plus", allData=a
 
 # Prepare for output
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-csv_files = glob.glob(f"{INPUT_DIR}/Altitude_*_ISA_*.csv")
+csv_files = glob.glob(f"{INPUT_DIR}/*.csv")
 ptd = PTD(AC)
 
 # Processing CSV files
@@ -40,9 +40,6 @@ for file_path in csv_files:
         df = pd.read_csv(file_path)
         results = []
 
-        # Extract altitude and ISA using regex
-        altitude_extracted, isa_extracted = extract_altitude_and_isa(file_path)
-
         for _, row in df.iterrows():
             mass = row["WGHT (KG)"]
             cas = row["CAS (KT)"]
@@ -51,6 +48,8 @@ for file_path in csv_files:
             mach = row["MACH"]
             drag_prn_val = row["DRAG (DAN)"]
             fuel_prn_val = row["WFE (KG/H)"]
+            altitude_extracted = row["Altitude"]
+            isa_extracted = row["ISA_DEV"]
 
             try:
                 result = ptd.PTD_cruise_SKYCONSEIL([mass], [altitude_extracted], cas, isa_extracted)

@@ -128,7 +128,7 @@ def optimize_mode_joint(optimise_for, xml_parser, csv_files):
 
 # Main Execution
 xml_parser = XMLParser("reference_dummy_extracted/Dummy-TWIN-plus/Dummy-TWIN-plus.xml")
-csv_files = glob.glob("ptd_results/results_Altitude_*_ISA_*.csv")
+csv_files = glob.glob("ptd_results/*.csv")
 
 if not csv_files:
     raise FileNotFoundError("No CSV files found. Run generate_ptd_inputs.py first.")
