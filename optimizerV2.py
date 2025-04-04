@@ -40,7 +40,8 @@ def rmse_cost_function(coefficients, tags, csv_files, xml_parser, optimise_for):
             print(f"WARNING: DataFrame for {file} is empty!")
             continue
 
-        mass, cas, roll, path, mach, drag = df["Mass"], df["CAS"], df["ROLL"], df["PATH"], df["Mach"], df["Drag_PRN"]
+        mass, cas, roll, mach, drag = df["Mass"], df["CAS"], df["Roll"], df["Mach"], df["Drag_PRN"]
+        # mass, cas, drag = df["Mass"], df["CAS"], df["Drag_PRN"]
         isa, altitude = df["ISA"][0], df["Altitude"][0]
 
         observed_values, predicted_values = [], []
@@ -57,7 +58,8 @@ def rmse_cost_function(coefficients, tags, csv_files, xml_parser, optimise_for):
         elif optimise_for == "fuel_beam":
             observed_values = df["Fuel_PRN"]
             predicted_values = [
-                ptd.PTD_cruise_BEAM_SKYCONSEIL(m, altitude, c, isa, path, roll, mach) for m, c, d in zip(mass, cas, drag)
+                ptd.PTD_cruise_BEAM_SKYCONSEIL(m, altitude, c, isa, 0, roll, mach) for m, c in zip(mass, cas)
+                # ptd.PTD_cruise_BEAM_SKYCONSEIL(m, altitude, c, isa, d) for m, c, d in zip(mass, cas, drag)
             ]
         else:
             raise ValueError("Invalid mode. Choose 'drag', 'fuel', or 'fuel_beam'.")
@@ -99,21 +101,12 @@ def optimize_mode_joint(optimise_for, xml_parser, csv_files):
 
     initial_guess = np.concatenate([xml_parser.find_tag_coefficients(tag) for tag in tags])
 
-    # result = differential_evolution(
-    #     rmse_cost_function,
-    #     bounds=[(-1, 1)] * len(initial_guess),
-    #     args=(tags, csv_files, xml_parser, optimise_for),
-    #     strategy='best1bin',
-    #     maxiter=1000,
-    #     popsize=20
-    # )
-
     result = minimize(
         rmse_cost_function,
         x0=initial_guess,
         args=(tags, csv_files, xml_parser, optimise_for),
         method="BFGS",
-        options={"maxiter": 300}
+        options={"maxiter": 100}
     )
 
     print("Optimal Coefficients:")
@@ -128,7 +121,7 @@ def optimize_mode_joint(optimise_for, xml_parser, csv_files):
 
 # Main Execution
 xml_parser = XMLParser("reference_dummy_extracted/Dummy-TWIN-plus/Dummy-TWIN-plus.xml")
-csv_files = glob.glob("ptd_results/results_A319_Altitude_*_ISA_*.csv")
+csv_files = glob.glob("ptd_results/*.csv")
 
 if not csv_files:
     raise FileNotFoundError("No CSV files found. Run generate_ptd_inputs.py first.")
@@ -136,5 +129,5 @@ if not csv_files:
 # Run optimizations
 # result_drag = optimize_mode("drag", xml_parser, csv_files)
 # result_fuel = optimize_mode("fuel", xml_parser, csv_files)
-# result_fuel_beam = optimize_mode("fuel_beam", xml_parser, csv_files)
-result_joint = optimize_mode_joint("fuel_beam", xml_parser, csv_files)
+result_fuel_beam = optimize_mode("fuel_beam", xml_parser, csv_files)
+# result_joint = optimize_mode_joint("fuel_beam", xml_parser, csv_files)

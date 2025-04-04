@@ -6,7 +6,7 @@ import mpl_toolkits.mplot3d
 
 # Merge all processed CSV files
 isa_value = '*'
-pattern = f"ptd_results/results_A319_Altitude_*_ISA_{isa_value}.csv"
+pattern = f"ptd_results/*.csv"
 all_results_df = pd.concat([pd.read_csv(f) for f in glob.glob(pattern)], ignore_index=True)
 
 def plot_rmse_vs_altitude(x, y, data, y_label, title, file_name):
@@ -17,24 +17,23 @@ def plot_rmse_vs_altitude(x, y, data, y_label, title, file_name):
     plt.savefig(file_name)
     plt.show()
 
-# # Now you can call this function for each plot
-# plot_rmse_vs_altitude(
-#     x="Altitude", y="RelativeError_Drag", data=all_results_df,
-#     y_label="RelativeError_Drag", title="DragRelativeError vs Altitude",
-#     file_name="res/DragRelativeError_vs_altitude.png"
-# )
-#
-# plot_rmse_vs_altitude(
-#     x="Altitude", y="RelativeError_Fuel", data=all_results_df,
-#     y_label="RelativeError_Fuel", title="FuelRelativeError vs Altitude",
-#     file_name="res/FuelRelativeError_vs_altitude.png"
-# )
-#
-# plot_rmse_vs_altitude(
-#     x="Altitude", y="RMSE_Fuel", data=all_results_df,
-#     y_label="RMSE_Fuel", title="RMSE_Fuel vs Altitude",
-#     file_name="res/RMSE_Fuel_vs_altitude.png"
-# )
+plot_rmse_vs_altitude(
+    x="Altitude", y="RelativeError_Drag", data=all_results_df,
+    y_label="RelativeError_Drag", title="DragRelativeError vs Altitude",
+    file_name="res/DragRelativeError_vs_altitude.png"
+)
+
+plot_rmse_vs_altitude(
+    x="Altitude", y="RelativeError_Fuel", data=all_results_df,
+    y_label="RelativeError_Fuel", title="FuelRelativeError vs Altitude",
+    file_name="res/FuelRelativeError_vs_altitude.png"
+)
+
+plot_rmse_vs_altitude(
+    x="Altitude", y="RMSE_Fuel", data=all_results_df,
+    y_label="RMSE_Fuel", title="RMSE_Fuel vs Altitude",
+    file_name="res/RMSE_Fuel_vs_altitude.png"
+)
 
 plot_rmse_vs_altitude(
     x="Altitude", y="RelativeError_Fuel_BEAM", data=all_results_df,

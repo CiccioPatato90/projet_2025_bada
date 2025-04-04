@@ -29,7 +29,7 @@ AC = Bada4Aircraft(badaVersion=BADA_VERSION, acName="Dummy-TWIN-plus", allData=a
 
 # Prepare for output
 os.makedirs(OUTPUT_DIR, exist_ok=True)
-csv_files = glob.glob(f"{INPUT_DIR}/A319_Altitude_*_ISA_*.csv")
+csv_files = glob.glob(f"{INPUT_DIR}/*.csv")
 ptd = PTD(AC)
 
 # Processing CSV files
@@ -40,38 +40,49 @@ for file_path in csv_files:
         results = []
 
         # Extract altitude and ISA using regex
-        altitude_extracted, isa_extracted = extract_altitude_and_isa(file_path)
+        # altitude, isa = extract_altitude_and_isa(file_path)
 
         for _, row in df.iterrows():
             mass = row["WGHT (KG)"]
+            altitude = row["ALTITUDE (FT)"]
+            isa = row["ISA TEMP (C)"]
             cas = row["CAS (KT)"]
-            roll = row["ROLL (DEG)"]
-            path = row["PATH (DEG)"]
+            roll = row["ALPH (DEG)"]
             mach = row["MACH"]
             drag_prn_val = row["DRAG (DAN)"]
             fuel_prn_val = row["WFE (KG/H)"]
 
             try:
-                result = ptd.PTD_cruise_SKYCONSEIL([mass], [altitude_extracted], cas, isa_extracted)
-                result_BEAM = ptd.PTD_cruise_BEAM_SKYCONSEIL(mass, altitude_extracted, cas, isa_extracted, 0, roll, mach)
-
+                result = ptd.PTD_cruise_SKYCONSEIL([mass], [altitude], cas, isa)
+                result_BEAM = ptd.PTD_cruise_BEAM_SKYCONSEIL(mass, altitude, cas, isa, 0, roll, mach)
+                # result_BEAM = ptd.PTD_cruise_BEAM_SKYCONSEIL(mass, altitude, cas, isa, drag_prn_val * 10)
                 drag_bada_val = result[0][0]
                 fuel_bada_val = result[1][0]
                 fuel_beam_val = result_BEAM
 
                 results.append([
-                    altitude_extracted, isa_extracted, mass, cas, mach, roll, path,
+                    altitude, isa, mass, cas, mach, roll,
                     drag_bada_val, drag_prn_val * 10, fuel_bada_val, fuel_beam_val, fuel_prn_val
                 ])
+
+                # results.append([
+                #     altitude, isa, mass, cas,
+                #     drag_bada_val, drag_prn_val * 10, fuel_bada_val, fuel_beam_val, fuel_prn_val
+                # ])
             except Exception as e:
                 print(f"PTD Error: {e} for mass={mass}, cas={cas} in {file_path}")
                 continue
 
         # Create results DataFrame
         results_df = pd.DataFrame(results, columns=[
-            "Altitude", "ISA", "Mass", "CAS", "Mach", "ROLL", "PATH",
+            "Altitude", "ISA", "Mass", "CAS", "Mach", "Roll",
             "Drag_BADA", "Drag_PRN", "Fuel_BADA", "Fuel_BEAM", "Fuel_PRN"
         ])
+
+        # results_df = pd.DataFrame(results, columns=[
+        #     "Altitude", "ISA", "Mass", "CAS",
+        #     "Drag_BADA", "Drag_PRN", "Fuel_BADA", "Fuel_BEAM", "Fuel_PRN"
+        # ])
 
         # Calculate RMSE and Relative Errors
         results_df["RMSE_Drag"] = results_df.apply(
