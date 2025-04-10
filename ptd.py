@@ -39,12 +39,9 @@ for file_path in csv_files:
         df = pd.read_csv(file_path)
         results = []
 
-        # Extract altitude and ISA using regex
-        # altitude, isa = extract_altitude_and_isa(file_path)
-
         for _, row in df.iterrows():
             mass = row["WGHT (KG)"]
-            altitude = row["ALTITUDE (FT)"]
+            altitude = row["Altitude"]
             isa = row["ISA TEMP (C)"]
             cas = row["CAS (KT)"]
             roll = row["ALPH (DEG)"]
@@ -54,21 +51,16 @@ for file_path in csv_files:
 
             try:
                 result = ptd.PTD_cruise_SKYCONSEIL([mass], [altitude], cas, isa)
-                result_BEAM = ptd.PTD_cruise_BEAM_SKYCONSEIL(mass, altitude, cas, isa, 0, roll, mach)
-                # result_BEAM = ptd.PTD_cruise_BEAM_SKYCONSEIL(mass, altitude, cas, isa, drag_prn_val * 10)
+                result_BEAM = ptd.PTD_cruise_BEAM_SKYCONSEIL(mass, altitude, cas, isa, 0, 0, mach)
                 drag_bada_val = result[0][0]
                 fuel_bada_val = result[1][0]
                 fuel_beam_val = result_BEAM
 
                 results.append([
-                    altitude, isa, mass, cas, mach, roll,
+                    altitude, isa, mass, cas, mach, 0,
                     drag_bada_val, drag_prn_val * 10, fuel_bada_val, fuel_beam_val, fuel_prn_val
                 ])
 
-                # results.append([
-                #     altitude, isa, mass, cas,
-                #     drag_bada_val, drag_prn_val * 10, fuel_bada_val, fuel_beam_val, fuel_prn_val
-                # ])
             except Exception as e:
                 print(f"PTD Error: {e} for mass={mass}, cas={cas} in {file_path}")
                 continue
@@ -78,11 +70,6 @@ for file_path in csv_files:
             "Altitude", "ISA", "Mass", "CAS", "Mach", "Roll",
             "Drag_BADA", "Drag_PRN", "Fuel_BADA", "Fuel_BEAM", "Fuel_PRN"
         ])
-
-        # results_df = pd.DataFrame(results, columns=[
-        #     "Altitude", "ISA", "Mass", "CAS",
-        #     "Drag_BADA", "Drag_PRN", "Fuel_BADA", "Fuel_BEAM", "Fuel_PRN"
-        # ])
 
         # Calculate RMSE and Relative Errors
         results_df["RMSE_Drag"] = results_df.apply(

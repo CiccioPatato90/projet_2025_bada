@@ -14,12 +14,28 @@ def calculate_tas(mach, temperature):
     tas = mach * np.sqrt(R * heat_ratio * temperature)
     return tas
 
-def calculate_isa_deviation(altitude_feet, temperature_real):
-    T0 = 15.0
-    T_ISA = T0 - (1.98 * altitude_feet) / 1000
-    delta_T = temperature_real - T_ISA
-    return delta_T
+# def calculate_isa_deviation(altitude_feet, temperature_real):
+#     T0 = 15.0
+#     T_ISA = T0 - (1.98 * altitude_feet) / 1000
+#     delta_T = temperature_real - T_ISA
+#     return delta_T
 
+def calculate_isa_temperature(altitude_meters):
+    # Constants
+    sea_level_temperature_C = 15.0       # Celsius
+    lapse_rate = 0.0065                  # K/m
+    tropopause_altitude = 11000          # meters
+
+    if altitude_meters < tropopause_altitude:
+        isa_temperature = sea_level_temperature_C - lapse_rate * altitude_meters
+    else:
+        isa_temperature = sea_level_temperature_C - lapse_rate * tropopause_altitude
+    return isa_temperature  # returns Celsius
+
+def calculate_isa_deviation(altitude_feet, temperature_real):
+    altitude_meters = altitude_feet * 0.3048
+    isa_temp = calculate_isa_temperature(altitude_meters)
+    return temperature_real - isa_temp  # both in °C
 
 def process_file(file_path):
     try:
@@ -41,7 +57,7 @@ def process_file(file_path):
             axis=1
         )
         df_filtered['SR (NMKG)'] = 0
-        df_filtered['WFE (KG/H)'] = df_filtered['Instant_Fuel']
+        df_filtered['WFE (KG/H)'] = df_filtered['Instant_Fuel'] * 2
         df_filtered['N1 (%)'] = df_filtered['N1_E1']
         df_filtered['EGT (DG.C)'] = df_filtered['EGT_E1']
         df_filtered['CL'] = 0
@@ -52,7 +68,7 @@ def process_file(file_path):
         df_filtered['FN (DAN)'] = 0
         df_filtered['PCFN (%)'] = 0
 
-        df_filtered['ISA_DEV'] = df_filtered.apply(
+        df_filtered['ISA TEMP (C)'] = df_filtered.apply(
             lambda row: calculate_isa_deviation(row['Altitude'], row['Static_Temp']),
             axis=1
         )
@@ -60,7 +76,7 @@ def process_file(file_path):
         final_columns = [
             'WGHT (KG)', 'MACH', 'CAS (KT)', 'TAS (KT)', 'SR (NMKG)', 'WFE (KG/H)',
             'N1 (%)', 'EGT (DG.C)', 'CL', 'CD', 'ALPH (DEG)', 'ROLL (DEG)', 'DRAG (DAN)', 'FN (DAN)', 'PCFN (%)',
-            'Altitude', 'ISA_DEV'
+            'Altitude', 'ISA TEMP (C)'
         ]
         df_final = df_filtered[final_columns]
 
