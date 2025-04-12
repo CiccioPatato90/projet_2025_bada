@@ -35,12 +35,13 @@ def rmse_cost_function(coefficients, tags, csv_files, xml_parser, optimise_for):
     all_rmse = []
 
     for file in csv_files:
-        df = pd.read_csv(file)
+        df = pd.read_csv(file).iloc[:5000]
+        # df = pd.read_csv(file)
         if df.empty:
-            print(f"WARNING: DataFrame for {file} is empty!")
+            print(f"WARNING: DataFrame  for {file} is empty!")
             continue
 
-        mass, cas, roll, path, mach, drag = df["Mass"], df["CAS"], df["ROLL"], df["PATH"], df["Mach"], df["Drag_PRN"]
+        mass, cas, roll, mach, drag = df["Mass"], df["CAS"], df["Roll"], df["Mach"], df["Drag_PRN"]
         isa, altitude = df["ISA"][0], df["Altitude"][0]
 
         observed_values, predicted_values = [], []
@@ -57,7 +58,7 @@ def rmse_cost_function(coefficients, tags, csv_files, xml_parser, optimise_for):
         elif optimise_for == "fuel_beam":
             observed_values = df["Fuel_PRN"]
             predicted_values = [
-                ptd.PTD_cruise_BEAM_SKYCONSEIL(m, altitude, c, isa, path, roll, mach) for m, c, d in zip(mass, cas, drag)
+                ptd.PTD_cruise_BEAM_SKYCONSEIL(m, altitude, c, isa, 0, roll, mach) for m, c in zip(mass, cas)
             ]
         else:
             raise ValueError("Invalid mode. Choose 'drag', 'fuel', or 'fuel_beam'.")
@@ -80,7 +81,7 @@ def optimize_mode(optimise_for, xml_parser, csv_files):
         x0=initial_guess,
         args=(tags, csv_files, xml_parser, optimise_for),
         method="BFGS",
-        options={"maxiter": 100}
+        options={"maxiter": 10}
     )
 
     print(f"Mode: {optimise_for}")
@@ -99,21 +100,12 @@ def optimize_mode_joint(optimise_for, xml_parser, csv_files):
 
     initial_guess = np.concatenate([xml_parser.find_tag_coefficients(tag) for tag in tags])
 
-    # result = differential_evolution(
-    #     rmse_cost_function,
-    #     bounds=[(-1, 1)] * len(initial_guess),
-    #     args=(tags, csv_files, xml_parser, optimise_for),
-    #     strategy='best1bin',
-    #     maxiter=1000,
-    #     popsize=20
-    # )
-
     result = minimize(
         rmse_cost_function,
         x0=initial_guess,
         args=(tags, csv_files, xml_parser, optimise_for),
         method="BFGS",
-        options={"maxiter": 400}
+        options={"maxiter": 100}
     )
 
     print("Optimal Coefficients:")
@@ -135,6 +127,6 @@ if not csv_files:
 
 # Run optimizations
 # result_drag = optimize_mode("drag", xml_parser, csv_files)
-# result_fuel = optimize_mode("fuel", xml_parser, csv_files)
+result_fuel = optimize_mode("fuel", xml_parser, csv_files)
 # result_fuel_beam = optimize_mode("fuel_beam", xml_parser, csv_files)
-result_joint = optimize_mode_joint("fuel_beam", xml_parser, csv_files)
+# result_joint = optimize_mode_joint("fuel_beam", xml_parser, csv_files)

@@ -25,8 +25,8 @@ def extract_unique_temperature(prn_file):
     return sorted(temps)
 
 
-prn_file_path = "../reference_skyconseil/A330_example.prn"
+prn_file_path = "../reference_skyconseil/A321_231_example.prn"
 unique_altitudes = extract_unique_altitudes(prn_file_path)
-unique_temps= extract_unique_temperature(prn_file_path)
+unique_temps = extract_unique_temperature(prn_file_path)
 print("Extracted Unique Altitudes:", unique_altitudes)
 print("Extracted Unique Temperatures:", unique_temps)

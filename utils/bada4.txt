@@ -5135,24 +5135,26 @@ class PTD(BADA4):
 
         return CRList
 
-    import numpy as np
-
-    def PTD_cruise_BEAM_SKYCONSEIL(self, mass, altitude, cas, isa, gamma, phi, Mach):
+    def PTD_cruise_BEAM_SKYCONSEIL(self, mass, altitude, cas, isa, gamma=None, phi=None, Mach=None, drag=None):
         """
         Computes the fuel flow during cruise using the generalized BEAM fuel model.
+
+        If `drag` is provided, it is used directly. Otherwise, drag is computed using
+        the aircraft state and atmospheric conditions.
 
         :param mass: Aircraft mass [kg]
         :param altitude: Altitude [ft]
         :param cas: Calibrated airspeed [kt]
         :param isa: ISA temperature deviation [°C]
-        :param drag: Drag force [N]
+        :param gamma: Path angle [rad] (required if drag not provided)
+        :param phi: Bank angle [rad] (required if drag not provided)
+        :param Mach: Mach number (required if drag not provided)
+        :param drag: Drag force [N] (optional, overrides internal drag computation)
         :return: Fuel flow [kg/s]
         """
 
         # Retrieve BEAM coefficients
         f0, f1, f2, f3, f4, f5 = self.AC.beam_fuel_coeffs
-
-        d0, d2, d16 = self.AC.beam_drag_coeffs
 
         # Convert altitude to meters
         altitude_m = conv.ft2m(altitude)
@@ -5163,13 +5165,20 @@ class PTD(BADA4):
         # Convert CAS to TAS
         tas = atm.cas2Tas(cas=cas, delta=delta, sigma=sigma)
 
-        rho = sigma * const.rho_0
+        # If drag is not provided, compute it
+        if drag is None:
+            if gamma is None or phi is None or Mach is None:
+                raise ValueError("gamma, phi, and Mach must be provided when drag is not given.")
 
-        D = (d0 * rho * tas ** 2 + d2 * (mass ** 2 * np.cos(gamma) ** 2) / (
-                    rho * tas ** 2 * np.cos(phi) ** 2)) * (1 + d16 * Mach ** 16)
+            # Retrieve drag coefficients
+            d0, d2, d16 = self.AC.beam_drag_coeffs
+
+            rho = sigma * const.rho_0
+            drag = (d0 * rho * tas ** 2 + d2 * (mass ** 2 * np.cos(gamma) ** 2) /
+                    (rho * tas ** 2 * np.cos(phi) ** 2)) * (1 + d16 * Mach ** 16)
 
         # Compute fuel flow using BEAM model
-        fuel_flow = f5 * (f0 - f1 * altitude + (f2 + f3 * tas - f4 * (tas ** 2)) * D)
+        fuel_flow = f5 * (f0 - f1 * altitude + (f2 + f3 * tas - f4 * (tas ** 2)) * drag)
 
         return fuel_flow
 
