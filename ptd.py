@@ -50,7 +50,6 @@ for file_path in csv_files:
             drag_prn_val = row["DRAG (DAN)"]
             fuel_prn_val = row["WFE (KG/H)"]
             altitude_extracted = row["Altitude"]
-            isa_extracted = row["ISA_DEV"]
 
             try:
                 result = ptd.PTD_cruise_SKYCONSEIL([mass], [altitude], cas, isa)

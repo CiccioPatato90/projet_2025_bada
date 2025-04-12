@@ -126,7 +126,7 @@ if not csv_files:
     raise FileNotFoundError("No CSV files found. Run generate_ptd_inputs.py first.")
 
 # Run optimizations
-result_drag = optimize_mode("drag", xml_parser, csv_files)
-result_fuel = optimize_mode("fuel", xml_parser, csv_files)
-result_fuel_beam = optimize_mode("fuel_beam", xml_parser, csv_files)
+# result_drag = optimize_mode("drag", xml_parser, csv_files)
+# result_fuel = optimize_mode("fuel", xml_parser, csv_files)
+# result_fuel_beam = optimize_mode("fuel_beam", xml_parser, csv_files)
 result_joint = optimize_mode_joint("fuel_beam", xml_parser, csv_files)
