@@ -14,12 +14,6 @@ def calculate_tas(mach, temperature):
     tas = mach * np.sqrt(R * heat_ratio * temperature)
     return tas
 
-# def calculate_isa_deviation(altitude_feet, temperature_real):
-#     T0 = 15.0
-#     T_ISA = T0 - (1.98 * altitude_feet) / 1000
-#     delta_T = temperature_real - T_ISA
-#     return delta_T
-
 def calculate_isa_temperature(altitude_meters):
     # Constants
     sea_level_temperature_C = 15.0       # Celsius

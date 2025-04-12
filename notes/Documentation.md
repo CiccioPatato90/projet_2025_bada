@@ -203,3 +203,32 @@ The default `ptd_cruise` function from the BADA library has been overwritten to 
 ---
 
 This comprehensive documentation should help new users understand the roles of each file and function within the project. For more details or code-level specifics, please refer directly to the source files.
+=======
+from_CSV_to_PTD
+---
+
+**Methods**
+
+* `calculate_tas(mach, temperature)`: Computes the True Airspeed (TAS) using Mach number and air temperature.
+
+* `calculate_isa_deviation(altitude_feet, temperature_real)`: Calculates the deviation from International Standard Atmosphere (ISA) temperature at a given altitude.
+
+* `calculate_drag()`: Placeholder function for drag computation.
+
+* `process_file(file_path)`: Processes a given CSV file to extract relevant flight data, apply transformations, and save structured data into categorized CSV files.
+
+**Key features**
+
+* Reads and filters flight data, focusing on cruise conditions.
+
+* Computes derived metrics like TAS and ISA deviation.
+
+* Segments data based on altitude and ISA deviation thresholds.
+
+* Saves structured flight data into categorized CSV files.
+
+* Supports automated batch processing of multiple CSV files.
+
+PTD
+---
+

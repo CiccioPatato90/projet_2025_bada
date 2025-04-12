@@ -33,6 +33,7 @@ csv_files = glob.glob(f"{INPUT_DIR}/*.csv")
 ptd = PTD(AC)
 
 # Processing CSV files
+
 for file_path in csv_files:
     print(f"Processing: {file_path}")
     try:
@@ -48,6 +49,8 @@ for file_path in csv_files:
             mach = row["MACH"]
             drag_prn_val = row["DRAG (DAN)"]
             fuel_prn_val = row["WFE (KG/H)"]
+            altitude_extracted = row["Altitude"]
+            isa_extracted = row["ISA_DEV"]
 
             try:
                 result = ptd.PTD_cruise_SKYCONSEIL([mass], [altitude], cas, isa)
