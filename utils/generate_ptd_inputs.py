@@ -53,7 +53,7 @@ for index, line in enumerate(lines):
         # Write data for this block
         with open(output_filepath, "w", newline="") as csvfile:
             writer = csv.writer(csvfile)
-            writer.writerow(["ALTITUDE (FT)", "ISA TEMP (C)", "WGHT (KG)", "MACH", "CAS (KT)", "TAS (KT)",
+            writer.writerow(["Altitude", "ISA TEMP (C)", "WGHT (KG)", "MACH", "CAS (KT)", "TAS (KT)",
                              "SR (NMKG)", "WFE (KG/H)", "N1 (%)", "EGT (DG.C)", "CL", "CD",
                              "ALPH (DEG)", "DRAG (DAN)", "FN (DAN)", "PCFN (%)"])
             writer.writerows(data_rows)

@@ -7,8 +7,7 @@ import numpy as np
 from scipy.interpolate import griddata
 
 # Merge all processed CSV files
-isa_value = '*'
-pattern = f"ptd_results/results_Altitude_*_ISA_{isa_value}.csv"
+pattern = f"ptd_results/*.csv"
 all_results_df = pd.concat([pd.read_csv(f) for f in glob.glob(pattern)], ignore_index=True)
 
 # Define a threshold for high relative error drag
